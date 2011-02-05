@@ -8,7 +8,9 @@ Echoe.new('wadlgen', '0.1.0') do |p|
   p.author = 'Jorgen Austvik'
   p.email = 'jaustvik@acm.org'
   p.ignore_pattern = ['tmp/*', 'nbproject/**/*']
-  p.development_dependencies = ['builder']
+  p.runtime_dependencies = ['builder']
+  p.require_paths = ['lib']
+  p.retain_gemspec = true
 end
 
 Dir["#{File.dirname(__FILE__)}/tasks/*.rake"].sort.each {|ext| load ext}

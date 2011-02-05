@@ -1,6 +1,6 @@
 module Wadlgen
 
-  require "lib/wadlgen/railtie" if defined?(Rails)
+  require "wadlgen/railtie.rb" if defined?(Rails)
 
   class Wadl
 

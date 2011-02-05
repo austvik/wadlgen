@@ -3,7 +3,7 @@
 #
 
 desc "Generates WADL descriptors from routes"
-task :wadl => :environment do
+task :wadlgen => :environment do
   require 'wadlgen'
   wsdl = Wadlgen::Wadl.new
   wsdl.generate
