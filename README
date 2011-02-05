@@ -1,0 +1,15 @@
+wadlgen
+=======
+
+An experiment to try to generate WADL
+(http://www.w3.org/Submission/wadl/) based on the routing information
+found in Rails 3 config/routes.rb.
+
+Approach:
+- Minimal rake task that calls a library to generate the WADL
+- Save application.wadl in public/
+- Let the user edit application.wadl to add information that can't be 
+  extracted, and preserve what the user has added the next time the
+  task is run
+
+Very work in progress.
