@@ -1,5 +1,7 @@
 module Wadlgen
 
+  require "lib/wadlgen/railtie" if defined?(Rails)
+
   class Wadl
 
     def generate
