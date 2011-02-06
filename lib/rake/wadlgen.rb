@@ -5,6 +5,6 @@
 desc "Generates WADL descriptors from routes"
 task :wadlgen => :environment do
   require 'wadlgen'
-  wsdl = Wadlgen::Wadl.new
-  wsdl.generate
+  wadl = Wadlgen::Wadl.new
+  wadl.generate("http://example.com/")
 end
