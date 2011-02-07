@@ -20,12 +20,35 @@ class TestGenerate < Test::Unit::TestCase
     assert_equal path, res.path
   end
 
+  def test_has_resource
+    base = "http://www.example.com/"
+    path = "resources"
+    app = Wadlgen::Application.new(base)
+    res = app.add_resource(path)
+    res2 = app.add_resource('applications')
+    assert app.has_resource? path
+    assert app.has_resource? 'applications'
+    assert !app.has_resource?('something')
+  end
+
+  def test_get_resource
+    base = "http://www.example.com/"
+    path = "resources"
+    app = Wadlgen::Application.new(base)
+    res = app.add_resource(path)
+    res2 = app.add_resource('applications')
+    assert_equal res2, app.get_resource('applications')
+    res3 = app.get_resource('users')
+    assert_equal 'users', res3.path
+    assert_equal app, res3.application
+  end
+
   def test_methods
     base = "http://www.example.com/"
     path = "resources"
     app = Wadlgen::Application.new(base)
     res = app.add_resource(path)
-    method = res.add_method(:verb => 'GET', :action => 'resource')
+    method = res.add_method('GET', 'resource')
     assert_equal res, method.resource
     assert_equal 1, res.methods.length
     assert_equal method, res.methods.first
@@ -34,12 +57,39 @@ class TestGenerate < Test::Unit::TestCase
     assert_equal 'GET_resources', method.id
   end
 
+  def test_has_method
+    base = "http://www.example.com/"
+    path = "resources"
+    app = Wadlgen::Application.new(base)
+    res = app.add_resource(path)
+    res.add_method('GET', 'resource')
+    res.add_method('POST', 'resource')
+    assert res.has_method? 'GET', 'resource'
+    assert res.has_method? 'POST', 'resource'
+    assert !res.has_method?('GET', 'something')
+    assert !res.has_method?('PUT', 'resource')
+    assert !res.has_method?('POST', 'something')
+  end
+
+  def test_get_method
+    base = "http://www.example.com/"
+    path = "resources"
+    app = Wadlgen::Application.new(base)
+    res = app.add_resource(path)
+    m1 = res.add_method('GET', 'resource')
+    m2 = res.add_method('POST', 'resource')
+    assert_equal m1, res.get_method('GET', 'resource')
+    assert_equal m2, res.get_method('POST', 'resource')
+    m3 = res.get_method('GET', 'user')
+    assert_equal res, m3.resource
+  end
+
   def test_response
     base = "http://www.example.com/"
     path = "resources"
     app = Wadlgen::Application.new(base)
     res = app.add_resource(path)
-    method = res.add_method(:verb => 'GET', :action => 'resource')
+    method = res.add_method('GET', 'resource')
     response = method.add_response(200)
     assert_equal 200, response.status
     assert_equal method, response.method
@@ -52,7 +102,7 @@ class TestGenerate < Test::Unit::TestCase
     path = "resources"
     app = Wadlgen::Application.new(base)
     res = app.add_resource(path)
-    method = res.add_method(:verb => 'GET', :action => 'resource')
+    method = res.add_method('GET', 'resource')
     response = method.add_response(200)
     repr = response.add_representation("application/xml", "xml")
     assert_equal "xml", repr.element
@@ -67,7 +117,7 @@ class TestGenerate < Test::Unit::TestCase
     path = "resources"
     app = Wadlgen::Application.new(base)
     res = app.add_resource(path)
-    method = res.add_method(:verb => 'GET', :action => 'resource')
+    method = res.add_method('GET', 'resource')
     request = method.add_request
     assert_equal method, request.method
     assert_equal 1, method.requests.length
@@ -79,7 +129,7 @@ class TestGenerate < Test::Unit::TestCase
     path = "resources"
     app = Wadlgen::Application.new(base)
     res = app.add_resource(path)
-    method = res.add_method(:verb => 'GET', :action => 'resource')
+    method = res.add_method('GET', 'resource')
     request = method.add_request
     param = request.add_param("id", "query")
     assert_equal 'id', param.name
@@ -95,7 +145,7 @@ class TestGenerate < Test::Unit::TestCase
     path = "resources"
     app = Wadlgen::Application.new(base)
     res = app.add_resource(path)
-    method = res.add_method(:verb => 'GET', :action => 'resource')
+    method = res.add_method('GET', 'resource')
     request = method.add_request
     param = request.add_param("id", "query")
     opt = param.add_option('xml', 'application/xml')

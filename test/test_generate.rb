@@ -35,7 +35,7 @@ HERE
     wadl = Wadlgen::Wadl.new
     app = Wadlgen::Application.new("http://example.com/application/")
     accounts = app.add_resource("accounts")
-    get = accounts.add_method(:verb => 'GET', :action => 'account')
+    get = accounts.add_method('GET', 'account')
     req = get.add_request
     query = req.add_param('format', 'query')
     query.add_option('html', 'application/html')

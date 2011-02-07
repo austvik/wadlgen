@@ -15,6 +15,18 @@ module Wadlgen
       resources << res
       res
     end
+
+    def has_resource?(path)
+      self.resources.any?{|res| res.path == path}
+    end
+
+    def get_resource(path)
+      if has_resource? path
+        self.resources.find {|resource| resource.path == path}
+      else
+        add_resource path
+      end
+    end
   end
 
   class Resource
@@ -25,27 +37,35 @@ module Wadlgen
       self.methods = []
     end
 
-    def add_method(data = {})
-      method = Method.new(self, data)
+    def add_method(verb, action)
+      method = Method.new(self, verb, action)
       self.methods << method
       method
     end
+    
+    def has_method?(verb, action)
+      self.methods.any?{|method| method.verb == verb && method.action == action}
+    end
+
+    def get_method(verb, action)
+      if has_method? verb, action
+        self.methods.find {|method| method.verb == verb && method.action == action}
+      else
+        add_method verb, action
+      end
+    end
+
   end
 
   class Method
     attr_accessor :resource, :verb, :action, :responses, :requests
 
-    def initialize(resource, data = {})
+    def initialize(resource, verb, action)
       self.responses = []
       self.requests = []
       self.resource = resource
-      data.each do |pair|
-        name = pair.first
-        name = name.to_s + "="
-        name = name.to_sym
-        value = pair.last
-        self.send name, value
-      end
+      self.verb = verb
+      self.action = action
     end
 
     def id
