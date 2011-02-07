@@ -11,8 +11,21 @@ class TestGenerate < Test::Unit::TestCase
   <resources base="http://example.com/application/">
     <resource path="accounts">
       <method name="GET" id="GET_accounts">
-        <request/>
-        <response/>
+        <request>
+          <param name="format" style="query">
+            <option value="html" mediaType="application/html"/>
+            <option value="xml" mediaType="application/xml"/>
+            <option value="json" mediaType="application/json"/>
+          </param>
+        </request>
+        <response status="200">
+          <representation mediaType="application/html" element="html"/>
+          <representation mediaType="application/xml" element="accounts"/>
+          <representation mediaType="application/json"/>
+        </response>
+        <response status="400">
+          <representation mediaType="application/xml" element="Error"/>
+        </response>
       </method>
     </resource>
   </resources>
@@ -23,6 +36,17 @@ HERE
     app = Wadlgen::Application.new("http://example.com/application/")
     accounts = app.add_resource("accounts")
     get = accounts.add_method(:verb => 'GET', :action => 'account')
+    req = get.add_request
+    query = req.add_param('format', 'query')
+    query.add_option('html', 'application/html')
+    query.add_option('xml', 'application/xml')
+    query.add_option('json', 'application/json')
+    success = get.add_response(200)
+    success.add_representation('application/html', 'html')
+    success.add_representation('application/xml', 'accounts')
+    success.add_representation('application/json')
+    err = get.add_response(400)
+    err.add_representation('application/xml', 'Error')
     result = wadl.generate_wadl app
 
     assert_equal expected, result

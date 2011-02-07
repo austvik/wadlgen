@@ -51,8 +51,28 @@ module Wadlgen
             xml.resource('path' => resource.path) do
               resource.methods.each do |method|
                 xml.tag!('method', 'name' => method.verb, 'id' => method.id) do
-                  xml.request
-                  xml.response
+                  method.requests.each do |req|
+                    xml.request do
+                      req.parameters.each do |param|
+                        xml.param('name' => param.name, 'style' => param.style) do
+                          param.options.each do |opt|
+                            xml.option('value' => opt.value, 'mediaType' => opt.media_type)
+                          end
+                        end
+                      end
+                    end
+                  end
+                  method.responses.each do |resp|
+                    xml.response('status' => resp.status) do
+                      resp.representations.each do |repr|
+                        if repr.element.nil?
+                          xml.representation('mediaType' => repr.media_type)
+                        else
+                          xml.representation('mediaType' => repr.media_type, 'element' => repr.element)
+                        end
+                      end
+                    end
+                  end
                 end
               end
             end
