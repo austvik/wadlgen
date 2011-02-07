@@ -20,8 +20,10 @@ class TestGenerate < Test::Unit::TestCase
 HERE
     
     wadl = Wadlgen::Wadl.new
-    structure = {'accounts' => ['GET']}
-    result = wadl.generate_wadl "http://example.com/application/", structure
+    app = Wadlgen::Application.new("http://example.com/application/")
+    accounts = app.add_resource("accounts")
+    get = accounts.add_method(:verb => 'GET', :action => 'account')
+    result = wadl.generate_wadl app
 
     assert_equal expected, result
 

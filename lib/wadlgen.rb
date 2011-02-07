@@ -1,15 +1,16 @@
 module Wadlgen
 
   require "wadlgen/railtie.rb" if defined?(Rails)
+  require "wadlgen/classes"
 
   class Wadl
 
     def generate(base)
-      structure = get_route_structure
-      puts generate_wadl base, structure
+      application = get_route_structure(base)
+      puts generate_wadl application
     end
 
-    def get_route_structure
+    def get_route_structure(base)
       Rails.application.reload_routes!
       structure = {}
       Rails.application.routes.named_routes.each do |name, route|
@@ -30,7 +31,7 @@ module Wadlgen
       structure
     end
 
-    def generate_wadl(base, structure)
+    def generate_wadl(application)
       require 'builder'
 
       out = ""
@@ -45,11 +46,11 @@ module Wadlgen
       }
 
       xml.application(namespaces) do
-        xml.resources('base' => base) do
-          structure.each_pair do |controller_name, methods|
-            xml.resource('path' => controller_name) do
-              methods.each do |method_name|
-                xml.tag!('method', 'name' => method_name, 'id' => "#{method_name}_#{controller_name}") do
+        xml.resources('base' => application.base) do
+          application.resources.each do |resource|
+            xml.resource('path' => resource.path) do
+              resource.methods.each do |method|
+                xml.tag!('method', 'name' => method.verb, 'id' => method.id) do
                   xml.request
                   xml.response
                 end
