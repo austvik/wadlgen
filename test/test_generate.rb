@@ -32,7 +32,6 @@ class TestGenerate < Test::Unit::TestCase
 </application>
 HERE
     
-    wadl = Wadlgen::Wadl.new
     app = Wadlgen::Application.new("http://example.com/application/")
     accounts = app.add_resource("accounts")
     get = accounts.add_method('GET', 'account')
@@ -47,7 +46,7 @@ HERE
     success.add_representation('application/json')
     err = get.add_response(400)
     err.add_representation('application/xml', 'Error')
-    result = wadl.generate_wadl app
+    result = Wadlgen::Wadl.generate_wadl app
 
     assert_equal expected, result
 
