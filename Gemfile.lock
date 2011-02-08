@@ -1,0 +1,20 @@
+GEM
+  remote: http://rubygems.org/
+  specs:
+    builder (3.0.0)
+    echoe (4.3.1)
+      gemcutter
+      rubyforge
+    gemcutter (0.6.1)
+    json_pure (1.5.1)
+    nokogiri (1.4.4)
+    rubyforge (2.0.4)
+      json_pure (>= 1.1.7)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  builder
+  echoe
+  nokogiri
