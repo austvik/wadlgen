@@ -16,11 +16,15 @@ module Wadlgen
 
       ns = {'wadl' => 'http://wadl.dev.java.net/2009/02'}
 
+      app = Wadlgen::Application.new
+      xml.xpath('/wadl:application/wadl:doc', ns).each do |docs|
+        app.add_doc(docs['title'], docs.content)
+      end
       resources = xml.xpath('/wadl:application/wadl:resources', ns).first
       base = resources['base']
-      app = Wadlgen::Application.new(base)
+      ress = app.add_resources(base)
       resources.xpath('wadl:resource', ns).each do |resource|
-        resource_elem = app.add_resource(resource['path'])
+        resource_elem = ress.add_resource(resource['path'])
         resource.xpath('wadl:method', ns).each do |method|
           method_elem = resource_elem.add_method(method['name'], method['id'])
           method.xpath('wadl:request', ns).each do |request|
@@ -46,7 +50,8 @@ module Wadlgen
     def self.get_route_structure(base)
       Rails.application.reload_routes!
 
-      app = Wadlgen::Application.new(base)
+      app = Wadlgen::Application.new
+      ress = app.add_resources(base)
       Rails.application.routes.named_routes.each do |name, route|
         defaults = route.defaults
 
@@ -56,7 +61,7 @@ module Wadlgen
         next if controller.match /\//
         next if action == 'edit'
 
-        resource = app.get_resource(route.path)
+        resource = ress.get_resource(route.path)
         method = resource.get_method(route.verb, defaults[:action])
         
         req = method.add_request
@@ -90,14 +95,19 @@ module Wadlgen
       }
 
       xml.application(namespaces) do
-        xml.resources('base' => application.base) do
-          application.resources.each do |resource|
+        if application.docs
+          application.docs.each do |docs_elem|
+            xml.doc(docs_elem.text, 'title' => docs_elem.title)
+          end
+        end
+        xml.resources('base' => application.resources.base) do
+          application.resources.resources.each do |resource|
             xml.resource('path' => resource.path) do
               resource.methods.each do |method|
-                xml.tag!('method', 'name' => method.verb, 'id' => method.id) do
-                  method.requests.each do |req|
+                xml.tag!('method', 'name' => method.name, 'id' => method.id) do
+                  if method.request
                     xml.request do
-                      req.parameters.each do |param|
+                      method.request.params.each do |param|
                         xml.param('name' => param.name, 'style' => param.style) do
                           param.options.each do |opt|
                             xml.option('value' => opt.value, 'mediaType' => opt.media_type)

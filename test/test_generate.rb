@@ -10,7 +10,7 @@ class TestGenerate < Test::Unit::TestCase
 <application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://wadl.dev.java.net/2009/02 wadl.xsd" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://wadl.dev.java.net/2009/02">
   <resources base="http://example.com/application/">
     <resource path="accounts">
-      <method name="GET" id="GET_accounts">
+      <method name="GET" id="accounts">
         <request>
           <param name="format" style="query">
             <option value="html" mediaType="application/html"/>
@@ -32,9 +32,10 @@ class TestGenerate < Test::Unit::TestCase
 </application>
 HERE
     
-    app = Wadlgen::Application.new("http://example.com/application/")
-    accounts = app.add_resource("accounts")
-    get = accounts.add_method('GET', 'account')
+    app = Wadlgen::Application.new
+    resources = app.add_resources("http://example.com/application/")
+    accounts = resources.add_resource("accounts")
+    get = accounts.add_method('GET', 'accounts')
     req = get.add_request
     query = req.add_param('format', 'query')
     query.add_option('html', 'application/html')

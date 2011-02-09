@@ -32,17 +32,17 @@ class Testparser < Test::Unit::TestCase
 HERE
 
     wadl = Wadlgen::Wadl.parse(document)
-    assert_equal "http://example.com/application/", wadl.base
-    assert_equal 1, wadl.resources.length
-    resource = wadl.resources.first
+    assert_equal "http://example.com/application/", wadl.resources.base
+    assert_equal 1, wadl.resources.resources.length
+    resource = wadl.resources.resources.first
     assert_equal 'accounts', resource.path
     assert_equal 1, resource.methods.length
     method = resource.methods.first
-    assert_equal 'GET', method.verb
-    assert_equal 1, method.requests.length
-    request = method.requests.first
-    assert_equal 1, request.parameters.length
-    param = request.parameters.first
+    assert_equal 'GET', method.name
+    assert method.request
+    request = method.request
+    assert_equal 1, request.params.length
+    param = request.params.first
     assert_equal 'format', param.name
     assert_equal 'query', param.style
     assert_equal 3, param.options.length
@@ -75,6 +75,9 @@ HERE
     document = <<HERE
 <?xml version="1.0" encoding="UTF-8"?>
 <application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://wadl.dev.java.net/2009/02 wadl.xsd" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://wadl.dev.java.net/2009/02">
+  <doc title="application">
+    Text about Application
+  </doc>
   <resources base="http://example.com/application/">
     <resource path="accounts">
       <method name="GET" id="GET_accounts">

@@ -6,11 +6,11 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 1.2") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jorgen Austvik"]
-  s.date = %q{2011-02-08}
+  s.date = %q{2011-02-09}
   s.description = %q{Generate WADL from rails routes}
   s.email = %q{jaustvik@acm.org}
   s.extra_rdoc_files = ["README", "lib/rake/wadlgen.rb", "lib/wadlgen.rb", "lib/wadlgen/classes.rb", "lib/wadlgen/railtie.rb"]
-  s.files = ["MIT-LICENSE", "README", "Rakefile", "lib/rake/wadlgen.rb", "lib/wadlgen.rb", "lib/wadlgen/classes.rb", "lib/wadlgen/railtie.rb", "test/test_classes.rb", "test/test_generate.rb", "test/test_parser.rb", "wadlgen.gemspec", "Manifest"]
+  s.files = ["Gemfile", "Gemfile.lock", "MIT-LICENSE", "README", "Rakefile", "lib/rake/wadlgen.rb", "lib/wadlgen.rb", "lib/wadlgen/classes.rb", "lib/wadlgen/railtie.rb", "test/test_classes.rb", "test/test_generate.rb", "test/test_parser.rb", "wadlgen.gemspec", "Manifest"]
   s.homepage = %q{https://github.com/austvik/wadlgen}
   s.rdoc_options = ["--line-numbers", "--inline-source", "--title", "Wadlgen", "--main", "README"]
   s.require_paths = ["lib"]

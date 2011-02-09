@@ -5,63 +5,63 @@ class TestGenerate < Test::Unit::TestCase
 
   def test_application
     base = "http://www.example.com/"
-    app = Wadlgen::Application.new(base)
-    assert_equal base, app.base
+    app = Wadlgen::Application.new
   end
 
   def test_resources
     base = "http://www.example.com/"
     path = "resources"
-    app = Wadlgen::Application.new(base)
-    res = app.add_resource(path)
-    assert_equal 1, app.resources.length
-    assert_equal res, app.resources.first
-    assert_equal app, res.application
+    app = Wadlgen::Application.new()
+    res = app.add_resources(base).add_resource(path)
+    assert_equal 1, app.resources.resources.length
+    assert_equal res, app.resources.resources.first
+    assert_equal app.resources, res.parent
     assert_equal path, res.path
   end
 
   def test_has_resource
     base = "http://www.example.com/"
     path = "resources"
-    app = Wadlgen::Application.new(base)
-    res = app.add_resource(path)
-    res2 = app.add_resource('applications')
-    assert app.has_resource? path
-    assert app.has_resource? 'applications'
-    assert !app.has_resource?('something')
+    app = Wadlgen::Application.new()
+    resources = app.add_resources(base)
+    res = resources.add_resource(path)
+    res2 = resources.add_resource('applications')
+    assert resources.has_resource? path
+    assert resources.has_resource? 'applications'
+    assert !resources.has_resource?('something')
   end
 
   def test_get_resource
     base = "http://www.example.com/"
     path = "resources"
-    app = Wadlgen::Application.new(base)
-    res = app.add_resource(path)
-    res2 = app.add_resource('applications')
-    assert_equal res2, app.get_resource('applications')
-    res3 = app.get_resource('users')
+    app = Wadlgen::Application.new()
+    resources = app.add_resources(base)
+    res = resources.add_resource(path)
+    res2 = resources.add_resource('applications')
+    assert_equal res2, resources.get_resource('applications')
+    res3 = resources.get_resource('users')
     assert_equal 'users', res3.path
-    assert_equal app, res3.application
+    assert_equal resources, res3.parent
   end
 
   def test_methods
     base = "http://www.example.com/"
     path = "resources"
-    app = Wadlgen::Application.new(base)
-    res = app.add_resource(path)
+    app = Wadlgen::Application.new
+    res = app.add_resources(base).add_resource(path)
     method = res.add_method('GET', 'resource')
-    assert_equal res, method.resource
+    assert_equal res, method.parent
     assert_equal 1, res.methods.length
     assert_equal method, res.methods.first
-    assert_equal 'GET', method.verb
-    assert_equal 'resource', method.action
-    assert_equal 'GET_resources', method.id
+    assert_equal 'GET', method.name
+    assert_equal 'resource', method.id
   end
 
   def test_has_method
     base = "http://www.example.com/"
     path = "resources"
-    app = Wadlgen::Application.new(base)
-    res = app.add_resource(path)
+    app = Wadlgen::Application.new
+    res = app.add_resources(base).add_resource(path)
     res.add_method('GET', 'resource')
     res.add_method('POST', 'resource')
     assert res.has_method? 'GET', 'resource'
@@ -74,21 +74,21 @@ class TestGenerate < Test::Unit::TestCase
   def test_get_method
     base = "http://www.example.com/"
     path = "resources"
-    app = Wadlgen::Application.new(base)
-    res = app.add_resource(path)
+    app = Wadlgen::Application.new
+    res = app.add_resources(base).add_resource(path)
     m1 = res.add_method('GET', 'resource')
     m2 = res.add_method('POST', 'resource')
     assert_equal m1, res.get_method('GET', 'resource')
     assert_equal m2, res.get_method('POST', 'resource')
     m3 = res.get_method('GET', 'user')
-    assert_equal res, m3.resource
+    assert_equal res, m3.parent
   end
 
   def test_response
     base = "http://www.example.com/"
     path = "resources"
-    app = Wadlgen::Application.new(base)
-    res = app.add_resource(path)
+    app = Wadlgen::Application.new
+    res = app.add_resources(base).add_resource(path)
     method = res.add_method('GET', 'resource')
     response = method.add_response(200)
     assert_equal 200, response.status
@@ -100,14 +100,14 @@ class TestGenerate < Test::Unit::TestCase
   def test_representation
     base = "http://www.example.com/"
     path = "resources"
-    app = Wadlgen::Application.new(base)
-    res = app.add_resource(path)
+    app = Wadlgen::Application.new
+    res = app.add_resources(base).add_resource(path)
     method = res.add_method('GET', 'resource')
     response = method.add_response(200)
     repr = response.add_representation("application/xml", "xml")
     assert_equal "xml", repr.element
     assert_equal "application/xml", repr.media_type
-    assert_equal response, repr.response
+    assert_equal response, repr.parent
     assert_equal 1, response.representations.length
     assert_equal repr, response.representations.first
   end
@@ -115,36 +115,35 @@ class TestGenerate < Test::Unit::TestCase
   def test_request
     base = "http://www.example.com/"
     path = "resources"
-    app = Wadlgen::Application.new(base)
-    res = app.add_resource(path)
+    app = Wadlgen::Application.new
+    res = app.add_resources(base).add_resource(path)
     method = res.add_method('GET', 'resource')
     request = method.add_request
     assert_equal method, request.method
-    assert_equal 1, method.requests.length
-    assert_equal request, method.requests.first
+    assert_equal request, method.request
   end
 
   def test_parameter
     base = "http://www.example.com/"
     path = "resources"
-    app = Wadlgen::Application.new(base)
-    res = app.add_resource(path)
+    app = Wadlgen::Application.new
+    res = app.add_resources(base).add_resource(path)
     method = res.add_method('GET', 'resource')
     request = method.add_request
     param = request.add_param("id", "query")
     assert_equal 'id', param.name
     assert_equal 'query', param.style
-    assert_equal request, param.request
-    assert_equal 1, request.parameters.length
-    assert_equal param, request.parameters.first
+    assert_equal request, param.parent
+    assert_equal 1, request.params.length
+    assert_equal param, request.params.first
   end
 
 
   def test_parameter_options
     base = "http://www.example.com/"
     path = "resources"
-    app = Wadlgen::Application.new(base)
-    res = app.add_resource(path)
+    app = Wadlgen::Application.new
+    res = app.add_resources(base).add_resource(path)
     method = res.add_method('GET', 'resource')
     request = method.add_request
     param = request.add_param("id", "query")
