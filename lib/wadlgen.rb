@@ -24,7 +24,7 @@ module Wadlgen
       base = resources['base']
       ress = app.add_resources(base)
       resources.xpath('wadl:resource', ns).each do |resource|
-        resource_elem = ress.add_resource(resource['path'])
+        resource_elem = ress.add_resource(nil, resource['path'])
         resource.xpath('wadl:method', ns).each do |method|
           method_elem = resource_elem.add_method(method['name'], method['id'])
           method.xpath('wadl:request', ns).each do |request|
@@ -61,7 +61,7 @@ module Wadlgen
         next if controller.match /\//
         next if action == 'edit'
 
-        resource = ress.get_resource(route.path)
+        resource = ress.get_resource(nil, route.path)
         method = resource.get_method(route.verb, defaults[:action])
         
         req = method.add_request
@@ -95,48 +95,117 @@ module Wadlgen
       }
 
       xml.application(namespaces) do
-        if application.docs
-          application.docs.each do |docs_elem|
-            xml.doc(docs_elem.text, 'title' => docs_elem.title)
-          end
-        end
+        add_docs xml, application
         xml.resources('base' => application.resources.base) do
-          application.resources.resources.each do |resource|
-            xml.resource('path' => resource.path) do
-              resource.methods.each do |method|
-                xml.tag!('method', 'name' => method.name, 'id' => method.id) do
-                  if method.request
-                    xml.request do
-                      method.request.params.each do |param|
-                        xml.param('name' => param.name, 'style' => param.style) do
-                          param.options.each do |opt|
-                            xml.option('value' => opt.value, 'mediaType' => opt.media_type)
-                          end
-                        end
-                      end
-                    end
-                  end
-                  method.responses.each do |resp|
-                    xml.response('status' => resp.status) do
-                      resp.representations.each do |repr|
-                        if repr.element.nil?
-                          xml.representation('mediaType' => repr.media_type)
-                        else
-                          xml.representation('mediaType' => repr.media_type, 'element' => repr.element)
-                        end
-                      end
-                    end
-                  end
-                end
-              end
-            end
-          end
+          add_resources xml, application.resources
         end
       end
       out
     end
 
 private
+
+    def self.add_resources(xml, elem)
+      if elem.resources
+        elem.resources.each do |resource|
+          xml.resource('path' => resource.path) do
+            add_docs xml, resource
+            add_params xml, resource
+            add_methods xml, resource.methods
+            add_resources xml, resource
+          end
+        end
+      end
+    end
+
+    def self.add_methods(xml, methods)
+      if methods
+        methods.each do |method|
+          xml.tag!('method', 'name' => method.name, 'id' => method.id) do
+            add_docs xml, method
+            add_request xml, method.request
+            add_responses xml, method.responses
+          end
+        end
+      end
+    end
+
+    def self.add_request(xml, request)
+      if request
+        xml.request do
+          add_docs xml, request
+          add_params xml, request
+          add_representation xml, request.representations
+        end
+      end
+    end
+
+    def self.add_responses(xml, responses)
+      if responses
+        responses.each do |resp|
+          xml.response('status' => resp.status) do
+            add_docs xml, resp
+            add_params xml, resp
+            add_representation xml, resp.representations
+          end
+        end
+      end
+    end
+
+    def self.add_representation(xml, representations)
+      if representations
+        representations.each do |repr|
+          attrs = {'mediaType' => repr.media_type}
+          attrs['element'] = repr.element if repr.element
+          if repr.docs || repr.params
+            xml.representation(attrs) do
+              add_docs xml, repr
+              add_params xml, repr
+            end
+          else
+            xml.representation(attrs)
+          end
+        end
+      end
+    end
+
+    def self.add_params(xml, elem)
+      if elem.params
+        elem.params.each do |param_elem|
+          attrs = {'name' => param_elem.name, 'style' => param_elem.style}
+          atttrs['href'] = param_elem.href unless param_elem.href.nil?
+          atttrs['id'] = param_elem.id unless param_elem.id.nil?
+          atttrs['type'] = param_elem.type unless param_elem.type.nil?
+          atttrs['required'] = param_elem.required unless param_elem.required.nil?
+          atttrs['default'] = param_elem.default unless param_elem.default.nil?
+          atttrs['path'] = param_elem.path unless param_elem.path.nil?
+          atttrs['repeating'] = param_elem.repeating unless param_elem.repeating.nil?
+          atttrs['fixed'] = param_elem.fixed unless param_elem.fixed.nil?
+          xml.param(attrs) do
+            add_docs xml, param_elem
+            if param_elem.options
+              param_elem.options.each do |opt_elem|
+                if opt_elem.docs and opt_elem.docs.length > 0
+                  xml.option('value' => opt_elem.value, 'mediaType' => opt_elem.media_type) do
+                    add_docs xml, opt_elem
+                  end
+                else
+                  xml.option('value' => opt_elem.value, 'mediaType' => opt_elem.media_type)
+                end
+              end
+            end
+          end
+        end
+      end
+    end
+
+    def self.add_docs(xml, elem)
+      if elem.docs
+        elem.docs.each do |docs_elem|
+          xml.doc(docs_elem.text, 'title' => docs_elem.title)
+        end
+      end
+    end
 
     def self.get_representations(controller, action)
       if action == 'edit'

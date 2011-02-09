@@ -17,6 +17,123 @@ module Wadlgen
 
   end
 
+  #
+  # Include this module in classes that can have resource tags
+  #
+  module Resourceable
+
+    attr_accessor :resources
+
+    def add_resource(type = nil, path = nil, id = nil, query_type = nil)
+      res = Resource.new(self, type, path, id, query_type)
+      res.path = path
+      self.resources = [] if self.resources.nil?
+      self.resources << res
+      res
+    end
+
+    def has_resource?(type, path)
+      self.resources = [] if self.resources.nil?
+      self.resources.any? {|resource| resource.path == path && resource.type == type}
+    end
+
+    def get_resource(type, path)
+      if has_resource? type, path
+        self.resources.find {|resource| resource.path == path && resource.type == type}
+      else
+        add_resource type, path
+      end
+    end
+
+  end
+
+  #
+  # Include this module in classes that can have param tags
+  #
+  module Paramable
+
+    attr_accessor :params
+
+    def add_param(name, style, href = nil, id = nil, type = nil, default = nil, path = nil, required = nil, repeating = nil, fixed = nil)
+      param = Parameter.new(self, name, style, href, id, type, default, path, required, repeating, fixed)
+      self.params = [] unless self.params
+      self.params << param
+      param
+    end
+
+    def has_param?(name, style)
+      self.params = [] unless self.params
+      self.params.any? {|param| param.name == name && param.style == style}
+    end
+
+    def get_param(name, style, href = nil, id = nil, type = nil, default = nil, path = nil, required = nil, repeating = nil, fixed = nil)
+      if has_param? name, style
+        self.params.find {|param| param.name == name && param.style == style}
+      else
+        add_param path, name, style, href, id, type, default, path, required, repeating, fixed
+      end
+    end
+
+  end
+
+  #
+  # Include this module in classes that can have method tags
+  #
+  module Methodable
+
+    attr_accessor :methods
+
+    def add_method(name, id)
+      method = Method.new(self, name, id)
+      self.methods = [] unless self.methods
+      self.methods << method
+      method
+    end
+
+    def has_method?(name, id)
+      self.methods = [] unless self.methods
+      self.methods.any? {|method| method.name == name && method.id == id}
+    end
+
+    def get_method(name, id)
+      if has_method? name, id
+        self.methods.find {|method| method.name == name && method.id == id}
+      else
+        add_method name, id
+      end
+    end
+
+  end
+
+  #
+  # Include this module in classes that can have representation tags
+  #
+  module Representable
+
+    attr_accessor :representations
+
+    def add_representation(media_type, element = nil)
+      repr = Representation.new(self, media_type, element)
+      self.representations ||= []
+      self.representations << repr
+      repr
+    end
+
+    def has_representation?(media_type)
+      self.representations ||= []
+      self.representations.any? {|repr| repr.media_type == media_type}
+    end
+
+    def get_representation(media_type, element = nil)
+      if has_representation? media_type
+        self.representation.find {|repr| repr.media_type == media_type}
+      else
+        add_representation media_type, element
+      end
+    end
+
+  end
+
   class Application
 
     include Wadlgen::Documentable
@@ -75,78 +192,44 @@ module Wadlgen
 
   end
 
-  class ResourceType
-
-    include Wadlgen::Documentable
-
-    attr_accessor :id, :application, :methods, :resources, :params
-
-    def initialize(application, id)
-      self.application = application
-      self.id = id
-      self.methods = []
-      self.resources = []
-      self.params = []
-    end
-
-    def add_resource(path)
-      res = Resource.new(self)
-      res.path = path
-      resources << res
-      res
-    end
-
-    def add_method(verb, action)
-      method = Method.new(self, verb, action)
-      self.methods << method
-      method
-    end
-
-    def add_param(name, style)
-      param = Parameter.new(self, name, style)
-      self.params << param
-      param
-    end
-
-  end
-
   class Resources
 
     include Wadlgen::Documentable
+    include Wadlgen::Resourceable
 
-    attr_accessor :parent, :resources, :base
+    attr_accessor :parent, :base
 
     def initialize(parent, base)
       self.parent = parent
       self.base = base
-      self.resources = []
     end
 
-    def add_resource(path)
-      res = Resource.new(self)
-      res.path = path
-      resources << res
-      res
+  end
+
+  class ResourceType
+
+    include Wadlgen::Documentable
+    include Wadlgen::Resourceable
+    include Wadlgen::Methodable
+    include Wadlgen::Paramable
+
+    attr_accessor :id, :application
+
+    def initialize(application, id)
+      self.application = application
+      self.id = id
     end
 
-    def has_resource?(path)
-      self.resources.any?{|res| res.path == path}
-    end
-
-    def get_resource(path)
-      if has_resource? path
-        self.resources.find {|resource| resource.path == path}
-      else
-        add_resource path
-      end
-    end
   end
 
   class Resource
 
     include Wadlgen::Documentable
+    include Wadlgen::Resourceable
+    include Wadlgen::Methodable
+    include Wadlgen::Paramable
 
-    attr_accessor :methods, :type, :path, :id, :query_type, :parent, :params, :resources
+    attr_accessor :type, :path, :id, :query_type, :parent
 
     def initialize(parent, type = nil, path = nil, id = nil, query_type = nil)
       self.parent = parent
@@ -154,38 +237,6 @@ module Wadlgen
       self.path = path
       self.id = id
       self.query_type = query_type
-      self.methods = []
-      self.params = []
-    end
-    
-    def add_param(name, style)
-      param = Parameter.new(self, name, style)
-      self.params << param
-      param
-    end
-
-    def add_method(name, id)
-      method = Method.new(self, name, id)
-      self.methods << method
-      method
-    end
-
-    def add_resource(path)
-      res = Resource.new(self, path)
-      resources << res
-      res
-    end
-
-    def has_method?(name, id)
-      self.methods.any?{|method| method.name == name && method.id == id}
-    end
-
-    def get_method(name, id)
-      if has_method? name, id
-        self.methods.find {|method| method.name == name && method.id == id}
-      else
-        add_method name, id
-      end
     end
 
   end
@@ -220,27 +271,24 @@ module Wadlgen
   class Response
 
     include Wadlgen::Documentable
+    include Wadlgen::Representable
+    include Wadlgen::Paramable
 
-    attr_accessor :status, :method, :representations
+    attr_accessor :status, :method
 
     def initialize(method, status)
       self.method = method
       self.status = status
-      self.representations = []
     end
 
-    def add_representation(media_type, element = nil)
-      repr = Representation.new(self, media_type, element)
-      self.representations << repr
-      repr
-    end
   end
 
   class Representation
 
     include Wadlgen::Documentable
+    include Wadlgen::Paramable
 
-    attr_accessor :element, :media_type, :parent, :href, :id, :profile, :params
+    attr_accessor :element, :media_type, :parent, :href, :id, :profile
 
     def initialize(parent, media_type = nil, element = nil, href = nil, id = nil, profile = nil)
       self.parent = parent
@@ -249,13 +297,6 @@ module Wadlgen
       self.href = href
       self.id = id
       self.profile = profile
-      self.params = []
-    end
-
-    def add_param(name, style)
-      param = Parameter.new(self, name, style)
-      self.params << param
-      param
     end
 
   end
@@ -263,26 +304,15 @@ module Wadlgen
   class Request
 
     include Wadlgen::Documentable
+    include Wadlgen::Paramable
+    include Wadlgen::Representable
 
-    attr_accessor :method, :params, :representations
+    attr_accessor :method
 
     def initialize(method)
-      self.params = []
-      self.representations = []
       self.method = method
     end
 
-    def add_param(name, style)
-      param = Parameter.new(self, name, style)
-      self.params << param
-      param
-    end
-
-    def add_representation(media_type, element = nil)
-      repr = Representation.new(self, media_type, element)
-      self.representations << repr
-      repr
-    end
   end
 
   class Parameter

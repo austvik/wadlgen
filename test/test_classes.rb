@@ -1,7 +1,7 @@
 require 'test/unit'
 require 'wadlgen'
 
-class TestGenerate < Test::Unit::TestCase
+class TestClasses < Test::Unit::TestCase
 
   def test_application
     base = "http://www.example.com/"
@@ -12,7 +12,7 @@ class TestGenerate < Test::Unit::TestCase
     base = "http://www.example.com/"
     path = "resources"
     app = Wadlgen::Application.new()
-    res = app.add_resources(base).add_resource(path)
+    res = app.add_resources(base).add_resource(nil, path)
     assert_equal 1, app.resources.resources.length
     assert_equal res, app.resources.resources.first
     assert_equal app.resources, res.parent
@@ -24,11 +24,11 @@ class TestGenerate < Test::Unit::TestCase
     path = "resources"
     app = Wadlgen::Application.new()
     resources = app.add_resources(base)
-    res = resources.add_resource(path)
-    res2 = resources.add_resource('applications')
-    assert resources.has_resource? path
-    assert resources.has_resource? 'applications'
-    assert !resources.has_resource?('something')
+    res = resources.add_resource(nil, path)
+    res2 = resources.add_resource(nil, 'applications')
+    assert resources.has_resource? nil, path
+    assert resources.has_resource? nil, 'applications'
+    assert !resources.has_resource?(nil, 'something')
   end
 
   def test_get_resource
@@ -36,10 +36,10 @@ class TestGenerate < Test::Unit::TestCase
     path = "resources"
     app = Wadlgen::Application.new()
     resources = app.add_resources(base)
-    res = resources.add_resource(path)
-    res2 = resources.add_resource('applications')
-    assert_equal res2, resources.get_resource('applications')
-    res3 = resources.get_resource('users')
+    res = resources.add_resource(nil, path)
+    res2 = resources.add_resource(nil, 'applications')
+    assert_equal res2, resources.get_resource(nil, 'applications')
+    res3 = resources.get_resource(nil, 'users')
     assert_equal 'users', res3.path
     assert_equal resources, res3.parent
   end
@@ -48,7 +48,7 @@ class TestGenerate < Test::Unit::TestCase
     base = "http://www.example.com/"
     path = "resources"
     app = Wadlgen::Application.new
-    res = app.add_resources(base).add_resource(path)
+    res = app.add_resources(base).add_resource(nil, path)
     method = res.add_method('GET', 'resource')
     assert_equal res, method.parent
     assert_equal 1, res.methods.length
@@ -61,7 +61,7 @@ class TestGenerate < Test::Unit::TestCase
     base = "http://www.example.com/"
     path = "resources"
     app = Wadlgen::Application.new
-    res = app.add_resources(base).add_resource(path)
+    res = app.add_resources(base).add_resource(nil, path)
     res.add_method('GET', 'resource')
     res.add_method('POST', 'resource')
     assert res.has_method? 'GET', 'resource'
@@ -75,7 +75,7 @@ class TestGenerate < Test::Unit::TestCase
     base = "http://www.example.com/"
     path = "resources"
     app = Wadlgen::Application.new
-    res = app.add_resources(base).add_resource(path)
+    res = app.add_resources(base).add_resource(nil, path)
     m1 = res.add_method('GET', 'resource')
     m2 = res.add_method('POST', 'resource')
     assert_equal m1, res.get_method('GET', 'resource')
@@ -88,7 +88,7 @@ class TestGenerate < Test::Unit::TestCase
     base = "http://www.example.com/"
     path = "resources"
     app = Wadlgen::Application.new
-    res = app.add_resources(base).add_resource(path)
+    res = app.add_resources(base).add_resource(nil, path)
     method = res.add_method('GET', 'resource')
     response = method.add_response(200)
     assert_equal 200, response.status
@@ -101,7 +101,7 @@ class TestGenerate < Test::Unit::TestCase
     base = "http://www.example.com/"
     path = "resources"
     app = Wadlgen::Application.new
-    res = app.add_resources(base).add_resource(path)
+    res = app.add_resources(base).add_resource(nil, path)
     method = res.add_method('GET', 'resource')
     response = method.add_response(200)
     repr = response.add_representation("application/xml", "xml")
@@ -116,7 +116,7 @@ class TestGenerate < Test::Unit::TestCase
     base = "http://www.example.com/"
     path = "resources"
     app = Wadlgen::Application.new
-    res = app.add_resources(base).add_resource(path)
+    res = app.add_resources(base).add_resource(nil, path)
     method = res.add_method('GET', 'resource')
     request = method.add_request
     assert_equal method, request.method
@@ -127,7 +127,7 @@ class TestGenerate < Test::Unit::TestCase
     base = "http://www.example.com/"
     path = "resources"
     app = Wadlgen::Application.new
-    res = app.add_resources(base).add_resource(path)
+    res = app.add_resources(base).add_resource(nil, path)
     method = res.add_method('GET', 'resource')
     request = method.add_request
     param = request.add_param("id", "query")
@@ -143,7 +143,7 @@ class TestGenerate < Test::Unit::TestCase
     base = "http://www.example.com/"
     path = "resources"
     app = Wadlgen::Application.new
-    res = app.add_resources(base).add_resource(path)
+    res = app.add_resources(base).add_resource(nil, path)
     method = res.add_method('GET', 'resource')
     request = method.add_request
     param = request.add_param("id", "query")

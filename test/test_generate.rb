@@ -34,7 +34,7 @@ HERE
     
     app = Wadlgen::Application.new
     resources = app.add_resources("http://example.com/application/")
-    accounts = resources.add_resource("accounts")
+    accounts = resources.add_resource(nil, "accounts")
     get = accounts.add_method('GET', 'accounts')
     req = get.add_request
     query = req.add_param('format', 'query')
