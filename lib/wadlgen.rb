@@ -16,35 +16,29 @@ module Wadlgen
 
       ns = {'wadl' => 'http://wadl.dev.java.net/2009/02'}
 
-      app = Wadlgen::Application.new
-      xml.xpath('/wadl:application/wadl:doc', ns).each do |docs|
-        app.add_doc(docs['title'], docs.content)
-      end
-      resources = xml.xpath('/wadl:application/wadl:resources', ns).first
+      app_elem = Wadlgen::Application.new
+      app = xml.xpath('//wadl:application', ns).first
+      
+      parse_docs(app, app_elem, 'wadl:doc', ns)
+      parse_grammars(app, app_elem, ns)
+
+      resources = app.xpath('wadl:resources', ns).first
       base = resources['base']
-      ress = app.add_resources(base)
+      resources_elem = app_elem.add_resources(base)
+      parse_docs(resources, resources_elem, 'wadl:doc', ns)
       resources.xpath('wadl:resource', ns).each do |resource|
-        resource_elem = ress.add_resource(nil, resource['path'])
-        resource.xpath('wadl:method', ns).each do |method|
-          method_elem = resource_elem.add_method(method['name'], method['id'])
-          method.xpath('wadl:request', ns).each do |request|
-            request_elem = method_elem.add_request
-            request.xpath('wadl:param', ns).each do |param|
-              param_elem = request_elem.add_param(param['name'], param['style'])
-              param.xpath('wadl:option', ns).each do |option|
-                param_elem.add_option(option['value'], option['mediaType'])
-              end
-            end
-          end
-          method.xpath('wadl:response', ns).each do |response|
-            response_elem = method_elem.add_response(response['status'].to_i)
-            response.xpath('wadl:representation', ns).each do |repr|
-              response_elem.add_representation(repr['mediaType'], repr['element'])
-            end
-          end
-        end
+        resource_elem = resources_elem.add_resource(nil, resource['path'])
+        parse_docs(resource, resource_elem, 'wadl:doc', ns)
+        parse_params resource, resource_elem, ns
+        parse_methods resource, resource_elem, ns
       end
-      app
+      app.xpath('wadl:resource_type', ns).each do |resource_type|
+        resource_type_elem = app_elem.add_resource_type(resource_type['id'])
+        parse_docs resource_type, resource_type_elem, 'wadl:doc', ns
+        parse_params resource_type, resource_type_elem, ns
+        parse_methods resource_type, resource_type_elem, ns
+      end
+      app_elem
     end
 
     def self.get_route_structure(base)
@@ -96,14 +90,80 @@ module Wadlgen
 
       xml.application(namespaces) do
         add_docs xml, application
+        add_grammars xml, application
         xml.resources('base' => application.resources.base) do
+          add_docs(xml, application.resources)
           add_resources xml, application.resources
         end
+        add_resource_types xml, application
       end
       out
     end
 
 private
+
+    def self.parse_grammars(parent, parent_elem, ns)
+      parent.xpath("wadl:grammars", ns).each do |grammars|
+        grammars_elem = parent_elem.add_grammars
+        parse_docs(grammars, grammars_elem, 'wadl:doc', ns)
+        parse_include(grammars, grammars_elem, ns)
+      end
+    end
+
+    def self.parse_include(parent, parent_elem, ns)
+      parent.xpath("wadl:include", ns).each do |include|
+        include_elem = parent_elem.add_include(include['href'])
+        parse_docs(include, include_elem, 'wadl:doc', ns)
+      end
+    end
+
+    def self.parse_docs(xml, obj, xpath, ns)
+      xml.xpath(xpath, ns).each do |docs|
+        obj.add_doc(docs['title'], docs.content)
+      end      
+    end
+
+    def self.parse_params(parent, parent_elem, ns)
+      parent.xpath('wadl:param', ns).each do |param|
+        param_elem = parent_elem.add_param(param['name'], param['style'], param['href'], param['id'], param['type'], param['default'], param['path'], param['required'], param['repeating'], param['fixed'])
+        parse_docs param, param_elem, 'wadl:doc', ns
+        param.xpath('wadl:option', ns).each do |option|
+          option_elem = param_elem.add_option(option['value'], option['mediaType'])
+          parse_docs option, option_elem, 'wadl:doc', ns
+        end
+        param.xpath('wadl:link', ns).each do |link|
+          link_elem = param_elem.add_link(link['resource_type'], link['rev'], link['rel'])
+          parse_docs link, link_elem, 'wadl:doc', ns
+        end
+      end
+    end
+
+    def self.parse_representation(parent, parent_elem, ns)
+      parent.xpath('wadl:representation', ns).each do |repr|
+        repr_elem = parent_elem.add_representation(repr['mediaType'], repr['element'])
+        parse_docs(repr, repr_elem, 'wadl:doc', ns)
+        parse_params repr, repr_elem, ns
+      end
+    end
+
+    def self.parse_methods(parent, parent_elem, ns)
+        parent.xpath('wadl:method', ns).each do |method|
+          method_elem = parent_elem.add_method(method['name'], method['id'])
+          parse_docs(method, method_elem, 'wadl:doc', ns)
+          method.xpath('wadl:request', ns).each do |request|
+            request_elem = method_elem.add_request
+            parse_docs(request, request_elem, 'wadl:doc', ns)
+            parse_params request, request_elem, ns
+            parse_representation request, request_elem, ns
+          end
+          method.xpath('wadl:response', ns).each do |response|
+            response_elem = method_elem.add_response(response['status'].to_i)
+            parse_docs(response, response_elem, 'wadl:doc', ns)
+            parse_params response, response_elem, ns
+            parse_representation response, response_elem, ns
+          end
+        end
+    end
 
     def self.add_resources(xml, elem)
       if elem.resources
@@ -113,6 +173,35 @@ private
             add_params xml, resource
             add_methods xml, resource.methods
             add_resources xml, resource
+          end
+        end
+      end
+    end
+
+    def self.add_grammars(xml, application)
+      if application.grammars
+        xml.grammars do
+          add_docs xml, application.grammars
+          application.grammars.includes.each do |incl|
+            if incl.docs
+              xml.include :href => incl.href do
+                add_docs xml, incl
+              end
+            else
+              xml.include :href => incl.href
+            end
+          end
+        end
+      end
+    end
+
+    def self.add_resource_types(xml, application)
+      if application.resource_types
+        application.resource_types.each do |rt|
+          xml.resource_type :id => rt.id do
+            add_docs xml, rt
+            add_params xml, rt
+            add_methods xml, rt.methods
           end
         end
       end
@@ -173,14 +262,14 @@ private
       if elem.params
         elem.params.each do |param_elem|
           attrs = {'name' => param_elem.name, 'style' => param_elem.style}
-          atttrs['href'] = param_elem.href unless param_elem.href.nil?
-          atttrs['id'] = param_elem.id unless param_elem.id.nil?
-          atttrs['type'] = param_elem.type unless param_elem.type.nil?
-          atttrs['required'] = param_elem.required unless param_elem.required.nil?
-          atttrs['default'] = param_elem.default unless param_elem.default.nil?
-          atttrs['path'] = param_elem.path unless param_elem.path.nil?
-          atttrs['repeating'] = param_elem.repeating unless param_elem.repeating.nil?
-          atttrs['fixed'] = param_elem.fixed unless param_elem.fixed.nil?
+          attrs['href'] = param_elem.href unless param_elem.href.nil?
+          attrs['id'] = param_elem.id unless param_elem.id.nil?
+          attrs['type'] = param_elem.type unless param_elem.type.nil?
+          attrs['required'] = param_elem.required unless param_elem.required.nil?
+          attrs['default'] = param_elem.default unless param_elem.default.nil?
+          attrs['path'] = param_elem.path unless param_elem.path.nil?
+          attrs['repeating'] = param_elem.repeating unless param_elem.repeating.nil?
+          attrs['fixed'] = param_elem.fixed unless param_elem.fixed.nil?
           xml.param(attrs) do
             add_docs xml, param_elem
             if param_elem.options
@@ -194,6 +283,16 @@ private
                 end
               end
             end
+            if param_elem.link
+              link_elem = param_elem.link
+              if link_elem.docs and link_elem.docs.length > 0
+                xml.link('rel' => link_elem.rel, 'resource_type' => link_elem.resource_type, 'rev' => link_elem.rev) do
+                  add_docs xml, link_elem
+                end
+              else
+                xml.link('rel' => link_elem.rel, 'resource_type' => link_elem.resource_type, 'rev' => link_elem.rev)
+              end
+            end
           end
         end
       end
@@ -202,7 +301,11 @@ private
     def self.add_docs(xml, elem)
       if elem.docs
         elem.docs.each do |docs_elem|
-          xml.doc(docs_elem.text, 'title' => docs_elem.title)
+          if docs_elem.text == ''
+            xml.doc('title' => docs_elem.title)
+          else
+            xml.doc(docs_elem.text, 'title' => docs_elem.title)
+          end
         end
       end
     end

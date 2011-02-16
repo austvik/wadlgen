@@ -79,7 +79,13 @@ HERE
     Text about Application
   </doc>
   <resources base="http://example.com/application/">
+    <doc title="resources">
+      Text about Resources
+    </doc>
     <resource path="accounts">
+      <doc title="resource">
+        Text about Resource
+      </doc>
       <method name="GET" id="GET_accounts">
         <request>
           <param name="format" style="query">
@@ -256,7 +262,10 @@ HERE
     wadl = Wadlgen::Wadl.parse complete
     document = Wadlgen::Wadl.generate_wadl(wadl)
 
-    assert_equal complete, document, :highlite => true
+    # TODO: Remove
+    p wadl
+
+    assert_equal complete, document
   end
 
 end

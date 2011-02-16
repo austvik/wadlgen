@@ -138,10 +138,11 @@ module Wadlgen
 
     include Wadlgen::Documentable
 
-    attr_accessor :resources, :grammars
+    attr_accessor :resources, :grammars, :resource_types
 
     def initialize()
       self.resources = []
+      self.resource_types = []
     end
 
     def add_grammars
@@ -153,6 +154,13 @@ module Wadlgen
     def add_resources(base)
       self.resources = Resources.new(self, base)
     end
+
+    def add_resource_type(id)
+      rt = ResourceType.new(self, id)
+      self.resource_types << rt
+      rt
+    end
+
   end
 
   class Doc
@@ -170,11 +178,17 @@ module Wadlgen
 
     include Wadlgen::Documentable
 
-    attr_accessor :incls, :application
+    attr_accessor :includes, :application
 
     def initialize(application)
       self.application = application
-      self.docs = []
+      self.includes = []
+    end
+
+    def add_include(href)
+      incl = Wadlgen::Incl.new(self, href)
+      includes << incl
+      incl
     end
 
   end
@@ -351,6 +365,8 @@ module Wadlgen
   class Link
     attr_accessor :parameter, :resource_type, :rev, :rel
 
+    include Wadlgen::Documentable
+    
     def initialize(parameter, resource_type = nil, rev = nil, rel = nil)
       self.parameter = parameter
       self.resource_type = resource_type

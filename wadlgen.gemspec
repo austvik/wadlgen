@@ -6,7 +6,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 1.2") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jorgen Austvik"]
-  s.date = %q{2011-02-09}
+  s.date = %q{2011-02-14}
   s.description = %q{Generate WADL from rails routes}
   s.email = %q{jaustvik@acm.org}
   s.extra_rdoc_files = ["README", "lib/rake/wadlgen.rb", "lib/wadlgen.rb", "lib/wadlgen/classes.rb", "lib/wadlgen/railtie.rb"]
