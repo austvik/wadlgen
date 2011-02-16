@@ -6,10 +6,10 @@ class Testparser < Test::Unit::TestCase
   def test_parse_simple_wadl
     document = <<HERE
 <?xml version="1.0" encoding="UTF-8"?>
-<application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://wadl.dev.java.net/2009/02 wadl.xsd" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://wadl.dev.java.net/2009/02">
+<application xmlns="http://wadl.dev.java.net/2009/02" xmlns:xml="http://www.w3.org/XML/1998/namespace" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://wadl.dev.java.net/2009/02 wadl.xsd" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\">
   <resources base="http://example.com/application/">
     <resource path="accounts">
-      <method name="GET" id="GET_accounts">
+      <method id="GET_accounts" name="GET">
         <request>
           <param name="format" style="query">
             <option value="html" mediaType="application/html"/>
@@ -18,12 +18,12 @@ class Testparser < Test::Unit::TestCase
           </param>
         </request>
         <response status="200">
-          <representation mediaType="application/html" element="html"/>
-          <representation mediaType="application/xml" element="accounts"/>
+          <representation element="html" mediaType="application/html"/>
+          <representation element="accounts" mediaType="application/xml"/>
           <representation mediaType="application/json"/>
         </response>
         <response status="400">
-          <representation mediaType="application/xml" element="Error"/>
+          <representation element="Error" mediaType="application/xml"/>
         </response>
       </method>
     </resource>
@@ -55,7 +55,7 @@ HERE
     assert_equal 2, method.responses.length
 
     response = method.responses.first
-    assert_equal 200, response.status
+    assert_equal '200', response.status
     assert_equal 3, response.representations.length
     assert_equal 'html', response.representations[0].element
     assert_equal 'application/html', response.representations[0].media_type
@@ -65,7 +65,7 @@ HERE
     assert_equal 'application/json', response.representations[2].media_type
 
     response = method.responses.last
-    assert_equal 400, response.status
+    assert_equal '400', response.status
     assert_equal 1, response.representations.length
     assert_equal 'Error', response.representations[0].element
     assert_equal 'application/xml', response.representations[0].media_type
@@ -74,7 +74,7 @@ HERE
   def test_roundtrip
     document = <<HERE
 <?xml version="1.0" encoding="UTF-8"?>
-<application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://wadl.dev.java.net/2009/02 wadl.xsd" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://wadl.dev.java.net/2009/02">
+<application xmlns="http://wadl.dev.java.net/2009/02" xmlns:xml="http://www.w3.org/XML/1998/namespace" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://wadl.dev.java.net/2009/02 wadl.xsd" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\">
   <doc title="application">
     Text about Application
   </doc>
@@ -86,21 +86,21 @@ HERE
       <doc title="resource">
         Text about Resource
       </doc>
-      <method name="GET" id="GET_accounts">
+      <method id="GET_accounts" name="GET">
         <request>
           <param name="format" style="query">
-            <option value="html" mediaType="application/html"/>
-            <option value="xml" mediaType="application/xml"/>
-            <option value="json" mediaType="application/json"/>
+            <option mediaType="application/html" value="html"/>
+            <option mediaType="application/xml" value="xml"/>
+            <option mediaType="application/json" value="json"/>
           </param>
         </request>
         <response status="200">
-          <representation mediaType="application/html" element="html"/>
-          <representation mediaType="application/xml" element="accounts"/>
+          <representation element="html" mediaType="application/html"/>
+          <representation element="accounts" mediaType="application/xml"/>
           <representation mediaType="application/json"/>
         </response>
         <response status="400">
-          <representation mediaType="application/xml" element="Error"/>
+          <representation element="Error" mediaType="application/xml"/>
         </response>
       </method>
     </resource>
@@ -120,151 +120,147 @@ HERE
 
     complete = <<HERE
 <?xml version="1.0" encoding="UTF-8"?>
-<tns:application xmlns:tns="http://wadl.dev.java.net/2009/02" xmlns:xml="http://www.w3.org/XML/1998/namespace" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://wadl.dev.java.net/2009/02 wadl2.xsd ">
-  <tns:doc title="" tns:lang=""/>
-  <tns:grammars>
-    <tns:doc title="" tns:lang=""/>
-    <tns:include href="http://tempuri.org">
-      <tns:doc title="" tns:lang=""/>
-    </tns:include>
-  </tns:grammars>
-  <tns:resources base="http://tempuri.org">
-    <tns:doc title="" tns:lang=""/>
-    <tns:resource id="idvalue0" path="" queryType="application/x-www-form-urlencoded" type="">
-      <tns:doc title="" tns:lang=""/>
-      <tns:param default="" fixed="" href="http://tempuri.org" id="idvalue1" name="NMTOKEN" path="" repeating="false" required="false" style="plain" type="xs:string">
-        <tns:doc title="" tns:lang=""/>
-        <tns:option mediaType="" value="">
-          <tns:doc title="" tns:lang=""/>
-        </tns:option>
-        <tns:link rel="token" resource_type="http://tempuri.org" rev="token">
-          <tns:doc title="" tns:lang=""/>
-        </tns:link>
-      </tns:param>
-      <tns:method href="http://tempuri.org" id="idvalue2" name="GET">
-        <tns:doc title="" tns:lang=""/>
-        <tns:request>
-          <tns:doc title="" tns:lang=""/>
-          <tns:param default="" fixed="" href="http://tempuri.org" id="idvalue3" name="NMTOKEN" path="" repeating="false" required="false" style="plain" type="xs:string">
-            <tns:doc title="" tns:lang=""/>
-            <tns:option mediaType="" value="">
-              <tns:doc title="" tns:lang=""/>
-            </tns:option>
-            <tns:link rel="token" resource_type="http://tempuri.org" rev="token">
-              <tns:doc title="" tns:lang=""/>
-            </tns:link>
-          </tns:param>
-          <tns:representation element="QName" href="http://tempuri.org" id="idvalue4" mediaType="" profile="">
-            <tns:doc title="" tns:lang=""/>
-            <tns:param default="" fixed="" href="http://tempuri.org" id="idvalue5" name="NMTOKEN" path="" repeating="false" required="false" style="plain" type="xs:string">
-              <tns:doc title="" tns:lang=""/>
-              <tns:option mediaType="" value="">
-                <tns:doc title="" tns:lang=""/>
-              </tns:option>
-              <tns:link rel="token" resource_type="http://tempuri.org" rev="token">
-                <tns:doc title="" tns:lang=""/>
-              </tns:link>
-            </tns:param>
-          </tns:representation>
-        </tns:request>
-        <tns:response status="">
-          <tns:doc title="" tns:lang=""/>
-          <tns:param default="" fixed="" href="http://tempuri.org" id="idvalue6" name="NMTOKEN" path="" repeating="false" required="false" style="plain" type="xs:string">
-            <tns:doc title="" tns:lang=""/>
-            <tns:option mediaType="" value="">
-              <tns:doc title="" tns:lang=""/>
-            </tns:option>
-            <tns:link rel="token" resource_type="http://tempuri.org" rev="token">
-              <tns:doc title="" tns:lang=""/>
-            </tns:link>
-          </tns:param>
-          <tns:representation element="QName" href="http://tempuri.org" id="idvalue7" mediaType="" profile="">
-            <tns:doc title="" tns:lang=""/>
-            <tns:param default="" fixed="" href="http://tempuri.org" id="idvalue8" name="NMTOKEN" path="" repeating="false" required="false" style="plain" type="xs:string">
-              <tns:doc title="" tns:lang=""/>
-              <tns:option mediaType="" value="">
-                <tns:doc title="" tns:lang=""/>
-              </tns:option>
-              <tns:link rel="token" resource_type="http://tempuri.org" rev="token">
-                <tns:doc title="" tns:lang=""/>
-              </tns:link>
-            </tns:param>
-          </tns:representation>
-        </tns:response>
-      </tns:method>
-    </tns:resource>
-  </tns:resources>
-  <tns:resource_type id="idvalue9">
-    <tns:doc title="" tns:lang=""/>
-    <tns:param default="" fixed="" href="http://tempuri.org" id="idvalue10" name="NMTOKEN" path="" repeating="false" required="false" style="plain" type="xs:string">
-      <tns:doc title="" tns:lang=""/>
-      <tns:option mediaType="" value="">
-        <tns:doc title="" tns:lang=""/>
-      </tns:option>
-      <tns:link rel="token" resource_type="http://tempuri.org" rev="token">
-        <tns:doc title="" tns:lang=""/>
-      </tns:link>
-    </tns:param>
-    <tns:method href="http://tempuri.org" id="idvalue11" name="GET">
-      <tns:doc title="" tns:lang=""/>
-      <tns:request>
-        <tns:doc title="" tns:lang=""/>
-        <tns:param default="" fixed="" href="http://tempuri.org" id="idvalue12" name="NMTOKEN" path="" repeating="false" required="false" style="plain" type="xs:string">
-          <tns:doc title="" tns:lang=""/>
-          <tns:option mediaType="" value="">
-            <tns:doc title="" tns:lang=""/>
-          </tns:option>
-          <tns:link rel="token" resource_type="http://tempuri.org" rev="token">
-            <tns:doc title="" tns:lang=""/>
-          </tns:link>
-        </tns:param>
-        <tns:representation element="QName" href="http://tempuri.org" id="idvalue13" mediaType="" profile="">
-          <tns:doc title="" tns:lang=""/>
-          <tns:param default="" fixed="" href="http://tempuri.org" id="idvalue14" name="NMTOKEN" path="" repeating="false" required="false" style="plain" type="xs:string">
-            <tns:doc title="" tns:lang=""/>
-            <tns:option mediaType="" value="">
-              <tns:doc title="" tns:lang=""/>
-            </tns:option>
-            <tns:link rel="token" resource_type="http://tempuri.org" rev="token">
-              <tns:doc title="" tns:lang=""/>
-            </tns:link>
-          </tns:param>
-        </tns:representation>
-      </tns:request>
-      <tns:response status="">
-        <tns:doc title="" tns:lang=""/>
-        <tns:param default="" fixed="" href="http://tempuri.org" id="idvalue15" name="NMTOKEN" path="" repeating="false" required="false" style="plain" type="xs:string">
-          <tns:doc title="" tns:lang=""/>
-          <tns:option mediaType="" value="">
-            <tns:doc title="" tns:lang=""/>
-          </tns:option>
-          <tns:link rel="token" resource_type="http://tempuri.org" rev="token">
-            <tns:doc title="" tns:lang=""/>
-          </tns:link>
-        </tns:param>
-        <tns:representation element="QName" href="http://tempuri.org" id="idvalue16" mediaType="" profile="">
-          <tns:doc title="" tns:lang=""/>
-          <tns:param default="" fixed="" href="http://tempuri.org" id="idvalue17" name="NMTOKEN" path="" repeating="false" required="false" style="plain" type="xs:string">
-            <tns:doc title="" tns:lang=""/>
-            <tns:option mediaType="" value="">
-              <tns:doc title="" tns:lang=""/>
-            </tns:option>
-            <tns:link rel="token" resource_type="http://tempuri.org" rev="token">
-              <tns:doc title="" tns:lang=""/>
-            </tns:link>
-          </tns:param>
-        </tns:representation>
-      </tns:response>
-    </tns:method>
-  </tns:resource_type>
-</tns:application>
+<application xmlns="http://wadl.dev.java.net/2009/02" xmlns:xml="http://www.w3.org/XML/1998/namespace" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://wadl.dev.java.net/2009/02 wadl.xsd" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\">
+  <doc title="" xml:lang=""/>
+  <grammars>
+    <doc title="" xml:lang=""/>
+    <include href="http://tempuri.org">
+      <doc title="" xml:lang=""/>
+    </include>
+  </grammars>
+  <resources base="http://tempuri.org">
+    <doc title="" xml:lang=""/>
+    <resource id="idvalue0" path="" queryType="application/x-www-form-urlencoded" type="">
+      <doc title="" xml:lang=""/>
+      <param default="" fixed="" href="http://tempuri.org" id="idvalue1" name="NMTOKEN" path="" repeating="false" required="false" style="plain" type="xs:string">
+        <doc title="" xml:lang=""/>
+        <option mediaType="" value="">
+          <doc title="" xml:lang=""/>
+        </option>
+        <link rel="token" resource_type="http://tempuri.org" rev="token">
+          <doc title="" xml:lang=""/>
+        </link>
+      </param>
+      <method href="http://tempuri.org" id="idvalue2" name="GET">
+        <doc title="" xml:lang=""/>
+        <request>
+          <doc title="" xml:lang=""/>
+          <param default="" fixed="" href="http://tempuri.org" id="idvalue3" name="NMTOKEN" path="" repeating="false" required="false" style="plain" type="xs:string">
+            <doc title="" xml:lang=""/>
+            <option mediaType="" value="">
+              <doc title="" xml:lang=""/>
+            </option>
+            <link rel="token" resource_type="http://tempuri.org" rev="token">
+              <doc title="" xml:lang=""/>
+            </link>
+          </param>
+          <representation element="QName" href="http://tempuri.org" id="idvalue4" mediaType="" profile="">
+            <doc title="" xml:lang=""/>
+            <param default="" fixed="" href="http://tempuri.org" id="idvalue5" name="NMTOKEN" path="" repeating="false" required="false" style="plain" type="xs:string">
+              <doc title="" xml:lang=""/>
+              <option mediaType="" value="">
+                <doc title="" xml:lang=""/>
+              </option>
+              <link rel="token" resource_type="http://tempuri.org" rev="token">
+                <doc title="" xml:lang=""/>
+              </link>
+            </param>
+          </representation>
+        </request>
+        <response status="">
+          <doc title="" xml:lang=""/>
+          <param default="" fixed="" href="http://tempuri.org" id="idvalue6" name="NMTOKEN" path="" repeating="false" required="false" style="plain" type="xs:string">
+            <doc title="" xml:lang=""/>
+            <option mediaType="" value="">
+              <doc title="" xml:lang=""/>
+            </option>
+            <link rel="token" resource_type="http://tempuri.org" rev="token">
+              <doc title="" xml:lang=""/>
+            </link>
+          </param>
+          <representation element="QName" href="http://tempuri.org" id="idvalue7" mediaType="" profile="">
+            <doc title="" xml:lang=""/>
+            <param default="" fixed="" href="http://tempuri.org" id="idvalue8" name="NMTOKEN" path="" repeating="false" required="false" style="plain" type="xs:string">
+              <doc title="" xml:lang=""/>
+              <option mediaType="" value="">
+                <doc title="" xml:lang=""/>
+              </option>
+              <link rel="token" resource_type="http://tempuri.org" rev="token">
+                <doc title="" xml:lang=""/>
+              </link>
+            </param>
+          </representation>
+        </response>
+      </method>
+    </resource>
+  </resources>
+  <resource_type id="idvalue9">
+    <doc title="" xml:lang=""/>
+    <param default="" fixed="" href="http://tempuri.org" id="idvalue10" name="NMTOKEN" path="" repeating="false" required="false" style="plain" type="xs:string">
+      <doc title="" xml:lang=""/>
+      <option mediaType="" value="">
+        <doc title="" xml:lang=""/>
+      </option>
+      <link rel="token" resource_type="http://tempuri.org" rev="token">
+        <doc title="" xml:lang=""/>
+      </link>
+    </param>
+    <method href="http://tempuri.org" id="idvalue11" name="GET">
+      <doc title="" xml:lang=""/>
+      <request>
+        <doc title="" xml:lang=""/>
+        <param default="" fixed="" href="http://tempuri.org" id="idvalue12" name="NMTOKEN" path="" repeating="false" required="false" style="plain" type="xs:string">
+          <doc title="" xml:lang=""/>
+          <option mediaType="" value="">
+            <doc title="" xml:lang=""/>
+          </option>
+          <link rel="token" resource_type="http://tempuri.org" rev="token">
+            <doc title="" xml:lang=""/>
+          </link>
+        </param>
+        <representation element="QName" href="http://tempuri.org" id="idvalue13" mediaType="" profile="">
+          <doc title="" xml:lang=""/>
+          <param default="" fixed="" href="http://tempuri.org" id="idvalue14" name="NMTOKEN" path="" repeating="false" required="false" style="plain" type="xs:string">
+            <doc title="" xml:lang=""/>
+            <option mediaType="" value="">
+              <doc title="" xml:lang=""/>
+            </option>
+            <link rel="token" resource_type="http://tempuri.org" rev="token">
+              <doc title="" xml:lang=""/>
+            </link>
+          </param>
+        </representation>
+      </request>
+      <response status="">
+        <doc title="" xml:lang=""/>
+        <param default="" fixed="" href="http://tempuri.org" id="idvalue15" name="NMTOKEN" path="" repeating="false" required="false" style="plain" type="xs:string">
+          <doc title="" xml:lang=""/>
+          <option mediaType="" value="">
+            <doc title="" xml:lang=""/>
+          </option>
+          <link rel="token" resource_type="http://tempuri.org" rev="token">
+            <doc title="" xml:lang=""/>
+          </link>
+        </param>
+        <representation element="QName" href="http://tempuri.org" id="idvalue16" mediaType="" profile="">
+          <doc title="" xml:lang=""/>
+          <param default="" fixed="" href="http://tempuri.org" id="idvalue17" name="NMTOKEN" path="" repeating="false" required="false" style="plain" type="xs:string">
+            <doc title="" xml:lang=""/>
+            <option mediaType="" value="">
+              <doc title="" xml:lang=""/>
+            </option>
+            <link rel="token" resource_type="http://tempuri.org" rev="token">
+              <doc title="" xml:lang=""/>
+            </link>
+          </param>
+        </representation>
+      </response>
+    </method>
+  </resource_type>
+</application>
 HERE
     wadl = Wadlgen::Wadl.parse complete
     document = Wadlgen::Wadl.generate_wadl(wadl)
-
-    # TODO: Remove
-    p wadl
-
     assert_equal complete, document
   end
 

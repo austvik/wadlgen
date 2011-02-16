@@ -7,27 +7,27 @@ class TestGenerate < Test::Unit::TestCase
 
     expected = <<HERE
 <?xml version="1.0" encoding="UTF-8"?>
-<application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://wadl.dev.java.net/2009/02 wadl.xsd" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://wadl.dev.java.net/2009/02">
+<application xmlns="http://wadl.dev.java.net/2009/02" xmlns:xml="http://www.w3.org/XML/1998/namespace" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://wadl.dev.java.net/2009/02 wadl.xsd" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\">
   <grammars>
     <include href="http://www.austvik.net/"/>
   </grammars>
   <resources base="http://example.com/application/">
     <resource path="accounts">
-      <method name="GET" id="accounts">
+      <method id="accounts" name="GET">
         <request>
           <param name="format" style="query">
-            <option value="html" mediaType="application/html"/>
-            <option value="xml" mediaType="application/xml"/>
-            <option value="json" mediaType="application/json"/>
+            <option mediaType="application/html" value="html"/>
+            <option mediaType="application/xml" value="xml"/>
+            <option mediaType="application/json" value="json"/>
           </param>
         </request>
         <response status="200">
-          <representation mediaType="application/html" element="html"/>
-          <representation mediaType="application/xml" element="accounts"/>
+          <representation element="html" mediaType="application/html"/>
+          <representation element="accounts" mediaType="application/xml"/>
           <representation mediaType="application/json"/>
         </response>
         <response status="400">
-          <representation mediaType="application/xml" element="Error"/>
+          <representation element="Error" mediaType="application/xml"/>
         </response>
       </method>
     </resource>

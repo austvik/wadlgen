@@ -12,4 +12,12 @@ Approach:
   extracted, and preserve what the user has added the next time the
   task is run
 
-Very work in progress.
+What works:
+- Parse a WADL file to an object model
+- Generate a WADL file from an object model
+- Parse a Rails Route file to a object model
+- Rake task to parse the rails route
+
+What remains
+- merge two object models
+- make the rails task write a application.wadl file

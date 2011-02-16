@@ -8,8 +8,8 @@ module Wadlgen
 
     attr_accessor :docs
 
-    def add_doc(title, text)
-      doc = Doc.new(self, title, text)
+    def add_doc(title, text, xml_lang = nil)
+      doc = Doc.new(self, title, text, xml_lang)
       self.docs = [] unless self.docs
       self.docs << doc
       doc
@@ -83,8 +83,8 @@ module Wadlgen
 
     attr_accessor :methods
 
-    def add_method(name, id)
-      method = Method.new(self, name, id)
+    def add_method(name, id, href = nil)
+      method = Method.new(self, name, id, href)
       self.methods = [] unless self.methods
       self.methods << method
       method
@@ -112,8 +112,8 @@ module Wadlgen
 
     attr_accessor :representations
 
-    def add_representation(media_type, element = nil)
-      repr = Representation.new(self, media_type, element)
+    def add_representation(media_type, element = nil, href = nil, id = nil, profile = nil)
+      repr = Representation.new(self, media_type, element, href, id, profile)
       self.representations ||= []
       self.representations << repr
       repr
@@ -164,12 +164,13 @@ module Wadlgen
   end
 
   class Doc
-    attr_accessor :parent, :title, :text
+    attr_accessor :parent, :title, :text, :xml_lang
 
-    def initialize(parent, title, text)
+    def initialize(parent, title, text, xml_lang = nil)
       self.parent = parent
       self.title = title
       self.text = text
+      self.xml_lang = xml_lang
     end
 
   end
@@ -288,7 +289,7 @@ module Wadlgen
     include Wadlgen::Representable
     include Wadlgen::Paramable
 
-    attr_accessor :status, :method
+    attr_accessor :method, :status
 
     def initialize(method, status)
       self.method = method
