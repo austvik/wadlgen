@@ -110,6 +110,9 @@ class TestClasses < Test::Unit::TestCase
     assert_equal response, repr.parent
     assert_equal 1, response.representations.length
     assert_equal repr, response.representations.first
+    assert response.has_representation?("application/xml"), "Response should have correct representation"
+    assert_equal "application/html", response.get_representation("application/html", "html").media_type
+    assert_equal "html", response.get_representation("application/html", "html").element
   end
 
   def test_request
@@ -136,6 +139,10 @@ class TestClasses < Test::Unit::TestCase
     assert_equal request, param.parent
     assert_equal 1, request.params.length
     assert_equal param, request.params.first
+    assert request.has_param?('id', 'query'), "Method should have param"
+    assert_equal param, request.get_param('id', 'query')
+    assert_equal 'nid', request.get_param('nid', 'nquery').name
+    assert_equal 'nquery', request.get_param('nid', 'nquery').style
   end
 
 

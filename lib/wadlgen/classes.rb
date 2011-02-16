@@ -70,7 +70,7 @@ module Wadlgen
       if has_param? name, style
         self.params.find {|param| param.name == name && param.style == style}
       else
-        add_param path, name, style, href, id, type, default, path, required, repeating, fixed
+        add_param name, style, href, id, type, default, path, required, repeating, fixed
       end
     end
 
@@ -126,7 +126,7 @@ module Wadlgen
 
     def get_representation(media_type, element = nil)
       if has_representation? media_type
-        self.representation.find {|repr| repr.media_type == media_type}
+        self.representations.find {|repr| repr.media_type == media_type}
       else
         add_representation media_type, element
       end

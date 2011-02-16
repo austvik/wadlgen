@@ -19,6 +19,7 @@ class TestGenerate < Test::Unit::TestCase
             <option mediaType="application/html" value="html"/>
             <option mediaType="application/xml" value="xml"/>
             <option mediaType="application/json" value="json"/>
+            <link rel="true" resource_type="application/xml" rev="1.0"/>
           </param>
         </request>
         <response status="200">
@@ -46,6 +47,7 @@ HERE
     query.add_option('html', 'application/html')
     query.add_option('xml', 'application/xml')
     query.add_option('json', 'application/json')
+    query.add_link('application/xml', '1.0', 'true')
     success = get.add_response(200)
     success.add_representation('application/html', 'html')
     success.add_representation('application/xml', 'accounts')

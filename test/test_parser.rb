@@ -31,7 +31,7 @@ class Testparser < Test::Unit::TestCase
 </application>
 HERE
 
-    wadl = Wadlgen::Wadl.parse(document)
+    wadl = Wadlgen::Wadl.parse_xml(document)
     assert_equal "http://example.com/application/", wadl.resources.base
     assert_equal 1, wadl.resources.resources.length
     resource = wadl.resources.resources.first
@@ -108,10 +108,10 @@ HERE
 </application>
 HERE
 
-    wadl = Wadlgen::Wadl.parse document
+    wadl = Wadlgen::Wadl.parse_xml document
     document2 = Wadlgen::Wadl.generate_wadl(wadl)
     assert_equal document, document2
-    wadl2 = Wadlgen::Wadl.parse document2
+    wadl2 = Wadlgen::Wadl.parse_xml document2
     document3 = Wadlgen::Wadl.generate_wadl(wadl2)
     assert_equal document, document3
   end
@@ -259,7 +259,7 @@ HERE
   </resource_type>
 </application>
 HERE
-    wadl = Wadlgen::Wadl.parse complete
+    wadl = Wadlgen::Wadl.parse_xml complete
     document = Wadlgen::Wadl.generate_wadl(wadl)
     assert_equal complete, document
   end
