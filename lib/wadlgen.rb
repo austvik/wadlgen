@@ -9,9 +9,9 @@ module Wadlgen
 
   class Wadl
 
-    def self.generate(base)
-      application = parse_route(base)
-      puts generate_wadl application
+    def self.generate(application, base)
+      application = parse_route(application, base)
+      generate_wadl application
     end
 
     def self.parse_xml(xml_doc)
@@ -19,8 +19,8 @@ module Wadlgen
       parser.parse
     end
 
-    def self.parse_route(base)
-      parser = Wadlgen::RouteParser.new base
+    def self.parse_route(application, base)
+      parser = Wadlgen::RouteParser.new application, base
       parser.parse
     end
 

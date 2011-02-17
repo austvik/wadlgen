@@ -5,5 +5,5 @@
 desc "Generates WADL descriptors from routes"
 task :wadlgen => :environment do
   require 'wadlgen'
-  Wadlgen::Wadl.generate("http://example.com/")
+  puts Wadlgen::Wadl.generate Rails.application, "http://example.com/"
 end

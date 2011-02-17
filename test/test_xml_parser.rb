@@ -1,7 +1,7 @@
 require 'test/unit'
 require 'wadlgen'
 
-class Testparser < Test::Unit::TestCase
+class TestParser < Test::Unit::TestCase
 
   def test_parse_simple_wadl
     document = <<HERE

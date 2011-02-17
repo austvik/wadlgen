@@ -2,9 +2,10 @@ module Wadlgen
 
   class RouteParser
 
-    attr_accessor :base
+    attr_accessor :application, :base
 
-    def initialize(base)
+    def initialize(application, base)
+      self.application = application
       self.base = base
     end
 
@@ -15,11 +16,11 @@ module Wadlgen
   private
 
     def get_route_structure(base)
-      Rails.application.reload_routes!
-
       app = Wadlgen::Application.new
       ress = app.add_resources(base)
-      Rails.application.routes.named_routes.each do |name, route|
+
+      application.routes.routes.each do |route|
+
         defaults = route.defaults
 
         controller = defaults[:controller]
@@ -48,18 +49,14 @@ module Wadlgen
     end
 
     def get_representations(controller, action)
-      if action == 'edit'
-        {:html => 'html'}
-      else
-        res = {}
-        controller_name = "#{controller}_controller".camelcase
-        cont_obj = Object::const_get(controller_name).new()
-        cont_obj.mimes_for_respond_to.each_pair do |format, type|
-          res[format] = format
-          # TODO: Only and Except
-        end
-        res
+      res = {}
+      controller_name = "#{controller}_controller".camelcase
+      cont_obj = Object::const_get(controller_name).new()
+      cont_obj.mimes_for_respond_to.each_pair do |format, type|
+        res[format] = format
+        # TODO: Only and Except
       end
+      res
     end
 
     def get_params(action)
@@ -75,8 +72,6 @@ module Wadlgen
       when 'destroy'
         {:id => 'query'}
       when 'index'
-        {}
-      when 'edit'
         {}
       else
         {}
