@@ -32,9 +32,11 @@ module Wadlgen
       xml.application(namespaces) do
         add_docs xml, application
         add_grammars xml, application
-        xml.resources('base' => application.resources.base) do
-          add_docs(xml, application.resources)
-          add_resources xml, application.resources
+        application.resources.each do |resources|
+          xml.resources('base' => resources.base) do
+            add_docs(xml, resources)
+            add_resources xml, resources
+          end
         end
         add_resource_types xml, application
       end
@@ -162,29 +164,33 @@ module Wadlgen
           attrs['required'] = param_elem.required unless param_elem.required.nil?
           attrs['style'] = param_elem.style unless param_elem.style.nil?
           attrs['type'] = param_elem.type unless param_elem.type.nil?
-          xml.param(attrs) do
-            add_docs xml, param_elem
-            if param_elem.options
-              param_elem.options.each do |opt_elem|
-                if opt_elem.docs and opt_elem.docs.length > 0
-                  xml.option('mediaType' => opt_elem.media_type, 'value' => opt_elem.value) do
-                    add_docs xml, opt_elem
+          if (param_elem.docs && param_elem.docs.length > 0) || param_elem.link || (param_elem.options && param_elem.options.length > 0)
+            xml.param(attrs) do
+              add_docs xml, param_elem
+              if param_elem.options
+                param_elem.options.each do |opt_elem|
+                  if opt_elem.docs and opt_elem.docs.length > 0
+                    xml.option('mediaType' => opt_elem.media_type, 'value' => opt_elem.value) do
+                      add_docs xml, opt_elem
+                    end
+                  else
+                    xml.option('mediaType' => opt_elem.media_type, 'value' => opt_elem.value)
+                  end
+                end
+              end
+              if param_elem.link
+                link_elem = param_elem.link
+                if link_elem.docs and link_elem.docs.length > 0
+                  xml.link('rel' => link_elem.rel, 'resource_type' => link_elem.resource_type, 'rev' => link_elem.rev) do
+                    add_docs xml, link_elem
                   end
                 else
-                  xml.option('mediaType' => opt_elem.media_type, 'value' => opt_elem.value)
+                  xml.link('rel' => link_elem.rel, 'resource_type' => link_elem.resource_type, 'rev' => link_elem.rev)
                 end
               end
             end
-            if param_elem.link
-              link_elem = param_elem.link
-              if link_elem.docs and link_elem.docs.length > 0
-                xml.link('rel' => link_elem.rel, 'resource_type' => link_elem.resource_type, 'rev' => link_elem.rev) do
-                  add_docs xml, link_elem
-                end
-              else
-                xml.link('rel' => link_elem.rel, 'resource_type' => link_elem.resource_type, 'rev' => link_elem.rev)
-              end
-            end
+          else
+            xml.param(attrs)
           end
         end
       end

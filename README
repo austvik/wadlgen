@@ -20,4 +20,4 @@ What works:
 
 What remains
 - merge two object models
-- make the rails task write a application.wadl file
+- make the rails task write a public/application.wadl file

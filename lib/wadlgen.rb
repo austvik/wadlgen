@@ -2,6 +2,7 @@ module Wadlgen
 
   require "wadlgen/railtie.rb" if defined?(Rails)
   require "wadlgen/classes"
+  require "wadlgen/merge"
   require "wadlgen/xml_parser"
   require "wadlgen/route_parser"
   require "wadlgen/xml_generator"
@@ -27,6 +28,11 @@ module Wadlgen
     def self.generate_wadl(application)
       generator = Wadlgen::XMLGenerator.new application
       generator.generate
+    end
+
+    def self.merge(initial_application, additional_application)
+      merger = Wadlgen::Merge.new initial_application, additional_application
+      merger.merge
     end
 
   end

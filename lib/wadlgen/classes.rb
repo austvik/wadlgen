@@ -15,6 +15,11 @@ module Wadlgen
       doc
     end
 
+    def has_doc?(title)
+      self.docs = [] if self.docs.nil?
+      self.docs.any? {|doc| doc.title == title}
+    end
+
   end
 
   #
@@ -106,6 +111,62 @@ module Wadlgen
   end
 
   #
+  # Define in elements that has links
+  #
+  module Linkable
+
+    attr_accessor :link
+
+    def add_link(resource_type, rev = nil, rel = nil)
+      self.link = Link.new(self, resource_type, rev, rel)
+    end
+
+    def has_link?(resource_type)
+      if self.link
+        self.link.resource_type == resource_type
+      end
+    end
+
+    def get_link(resource_type, rev = nil, rel = nil)
+      if has_link? resorce_type
+        self.links
+      else
+        add_link resource_type, rev, rel
+      end
+    end
+
+  end
+
+  #
+  # Define in elements that has options
+  #
+  module Optionable
+
+    attr_accessor :options
+
+    def add_option(value, media_type = nil)
+      option = ParameterOption.new(self, value, media_type)
+      self.options = [] unless self.options
+      self.options << option
+      option
+    end
+
+    def has_option?(value)
+      self.options = [] unless self.options
+      self.options.any? {|opt| opt.value == value}
+    end
+
+    def get_option(value, media_type = nil)
+      if has_option? value
+        self.options.find {|opt| opt.value == value and opt.media_type == media_type}
+      else
+        add_option value, media_type
+      end
+    end
+
+  end
+
+  #
   # Include this module in classes that can have representation tags
   #
   module Representable
@@ -152,7 +213,21 @@ module Wadlgen
     end
 
     def add_resources(base)
-      self.resources = Resources.new(self, base)
+      ress = Resources.new(self, base)
+      self.resources << ress
+      ress
+    end
+
+    def has_resources?(base)
+      self.resources.any? {|res| res.base == base}
+    end
+
+    def get_resources(base)
+      if has_resources? base
+        self.resources.find {|res| res.base == base}
+      else
+        add_resources base
+      end
     end
 
     def add_resource_type(id)
@@ -190,6 +265,10 @@ module Wadlgen
       incl = Wadlgen::Incl.new(self, href)
       includes << incl
       incl
+    end
+
+    def has_include?(href)
+      self.includes.any? {|incl| incl.href == href}
     end
 
   end
@@ -333,6 +412,8 @@ module Wadlgen
   class Parameter
 
     include Wadlgen::Documentable
+    include Wadlgen::Linkable
+    include Wadlgen::Optionable
 
     attr_accessor :parent, :name, :style, :options, :href, :link, :id, :type, :default, :path, :required, :repeating, :fixed
 
@@ -349,16 +430,6 @@ module Wadlgen
       self.repeating = repeating
       self.fixed = fixed
       self.options = []
-    end
-
-    def add_option(value, media_type = nil)
-      option = ParameterOption.new(self, value, media_type)
-      options << option
-      option
-    end
-
-    def add_link(resource_type, rev, rel)
-      self.link = Link.new(self, resource_type, rev, rel)
     end
 
   end

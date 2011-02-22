@@ -27,7 +27,7 @@ class TestRouteParser < Test::Unit::TestCase
 
     app = Wadlgen::Wadl.parse_route(WadlgenTestApp, 'https://example.com/app')
 
-    ress = app.resources
+    ress = app.resources.first
     assert_equal 'https://example.com/app', ress.base
     assert_equal 4, ress.resources.count
     res = ress.resources.first
@@ -63,8 +63,7 @@ class TestRouteParser < Test::Unit::TestCase
             <option mediaType="application/xml" value="xml"/>
             <option mediaType="application/html" value="html"/>
           </param>
-          <param name="id" style="query">
-          </param>
+          <param name="id" style="query"/>
         </request>
         <response status="200">
           <representation element="json" mediaType="application/json"/>
@@ -81,8 +80,7 @@ class TestRouteParser < Test::Unit::TestCase
             <option mediaType="application/xml" value="xml"/>
             <option mediaType="application/html" value="html"/>
           </param>
-          <param name="id" style="query">
-          </param>
+          <param name="id" style="query"/>
         </request>
         <response status="200">
           <representation element="json" mediaType="application/json"/>
@@ -99,8 +97,7 @@ class TestRouteParser < Test::Unit::TestCase
             <option mediaType="application/xml" value="xml"/>
             <option mediaType="application/html" value="html"/>
           </param>
-          <param name="id" style="query">
-          </param>
+          <param name="id" style="query"/>
         </request>
         <response status="200">
           <representation element="json" mediaType="application/json"/>
@@ -115,8 +112,7 @@ class TestRouteParser < Test::Unit::TestCase
             <option mediaType="application/xml" value="xml"/>
             <option mediaType="application/html" value="html"/>
           </param>
-          <param name="id" style="query">
-          </param>
+          <param name="id" style="query"/>
         </request>
         <response status="200">
           <representation element="json" mediaType="application/json"/>
@@ -131,8 +127,7 @@ class TestRouteParser < Test::Unit::TestCase
             <option mediaType="application/xml" value="xml"/>
             <option mediaType="application/html" value="html"/>
           </param>
-          <param name="id" style="query">
-          </param>
+          <param name="id" style="query"/>
         </request>
         <response status="200">
           <representation element="json" mediaType="application/json"/>

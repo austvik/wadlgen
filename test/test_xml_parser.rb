@@ -32,9 +32,9 @@ class TestParser < Test::Unit::TestCase
 HERE
 
     wadl = Wadlgen::Wadl.parse_xml(document)
-    assert_equal "http://example.com/application/", wadl.resources.base
-    assert_equal 1, wadl.resources.resources.length
-    resource = wadl.resources.resources.first
+    assert_equal "http://example.com/application/", wadl.resources.first.base
+    assert_equal 1, wadl.resources.first.resources.length
+    resource = wadl.resources.first.resources.first
     assert_equal 'accounts', resource.path
     assert_equal 1, resource.methods.length
     method = resource.methods.first

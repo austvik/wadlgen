@@ -13,9 +13,9 @@ class TestClasses < Test::Unit::TestCase
     path = "resources"
     app = Wadlgen::Application.new()
     res = app.add_resources(base).add_resource(nil, path)
-    assert_equal 1, app.resources.resources.length
-    assert_equal res, app.resources.resources.first
-    assert_equal app.resources, res.parent
+    assert_equal 1, app.resources.first.resources.length
+    assert_equal res, app.resources.first.resources.first
+    assert_equal app.resources.first, res.parent
     assert_equal path, res.path
   end
 
