@@ -13,6 +13,9 @@ class TestClasses < Test::Unit::TestCase
     path = "resources"
     app = Wadlgen::Application.new()
     res = app.add_resources(base).add_resource(nil, path)
+    assert app.has_resources?(base), "App should have resources"
+    assert_equal base, app.get_resources(base).base
+    assert_equal 'http://something/', app.get_resources('http://something/').base
     assert_equal 1, app.resources.first.resources.length
     assert_equal res, app.resources.first.resources.first
     assert_equal app.resources.first, res.parent
@@ -42,6 +45,18 @@ class TestClasses < Test::Unit::TestCase
     res3 = resources.get_resource(nil, 'users')
     assert_equal 'users', res3.path
     assert_equal resources, res3.parent
+  end
+
+  def test_resource_types
+    base = "http://www.example.com/"
+    path = "resources"
+    app = Wadlgen::Application.new()
+    rt = app.add_resource_type 'rt1'
+    assert app.has_resource_type?('rt1'), "Should have recource type"
+    assert_equal rt, app.get_resource_type('rt1')
+    assert_equal 1, app.resource_types.length
+    assert_equal 'rt2', app.get_resource_type('rt2').id
+    assert_equal 2, app.resource_types.length
   end
 
   def test_methods
@@ -91,10 +106,13 @@ class TestClasses < Test::Unit::TestCase
     res = app.add_resources(base).add_resource(nil, path)
     method = res.add_method('GET', 'resource')
     response = method.add_response(200)
+    assert method.has_response?(200), "Should have the response"
     assert_equal 200, response.status
     assert_equal method, response.method
     assert_equal 1, method.responses.length
+    assert_equal response, method.get_response(200)
     assert_equal response, method.responses.first
+    assert_equal 300, method.get_response(300).status
   end
 
   def test_representation
@@ -143,6 +161,10 @@ class TestClasses < Test::Unit::TestCase
     assert_equal param, request.get_param('id', 'query')
     assert_equal 'nid', request.get_param('nid', 'nquery').name
     assert_equal 'nquery', request.get_param('nid', 'nquery').style
+    link = param.add_link('application/xml', '1.0', '..')
+    assert param.has_link?('application/xml'), "Param should have link"
+    assert_equal link, param.get_link('application/xml')
+    assert_equal 'application/json', param.get_link('application/json').resource_type
   end
 
 
@@ -155,10 +177,14 @@ class TestClasses < Test::Unit::TestCase
     request = method.add_request
     param = request.add_param("id", "query")
     opt = param.add_option('xml', 'application/xml')
+    assert param.has_option? 'xml'
+    assert_equal 'xml', param.get_option('xml').value
+    assert_equal 'json', param.get_option('json', 'application/json').value
+    assert_equal 'application/json', param.get_option('json', 'application/json').media_type
     assert_equal 'xml', opt.value
     assert_equal 'application/xml', opt.media_type
     assert_equal param, opt.parameter
-    assert_equal 1, param.options.length
+    assert_equal 2, param.options.length
     assert_equal opt, param.options.first
   end
 

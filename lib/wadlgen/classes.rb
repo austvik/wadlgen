@@ -128,8 +128,8 @@ module Wadlgen
     end
 
     def get_link(resource_type, rev = nil, rel = nil)
-      if has_link? resorce_type
-        self.links
+      if has_link? resource_type
+        self.link
       else
         add_link resource_type, rev, rel
       end
@@ -158,7 +158,7 @@ module Wadlgen
 
     def get_option(value, media_type = nil)
       if has_option? value
-        self.options.find {|opt| opt.value == value and opt.media_type == media_type}
+        self.options.find {|opt| opt.value == value}
       else
         add_option value, media_type
       end
@@ -236,6 +236,17 @@ module Wadlgen
       rt
     end
 
+    def has_resource_type?(id)
+      self.resource_types.any? {|res_t| res_t.id == id}
+    end
+
+    def get_resource_type(id)
+      if has_resource_type? id
+        self.resource_types.find {|res_t| res_t.id == id}
+      else
+        add_resource_type id
+      end
+    end
   end
 
   class Doc
@@ -356,6 +367,18 @@ module Wadlgen
       resp
     end
 
+    def has_response?(status)
+      self.responses.any? {|resp| resp.status == status}
+    end
+
+    def get_response(status)
+      if has_response? status
+        self.responses.find {|resp| resp.status == status}
+      else
+        add_response status
+      end
+    end
+
     def add_request()
       self.request = Request.new(self)
     end
@@ -415,7 +438,7 @@ module Wadlgen
     include Wadlgen::Linkable
     include Wadlgen::Optionable
 
-    attr_accessor :parent, :name, :style, :options, :href, :link, :id, :type, :default, :path, :required, :repeating, :fixed
+    attr_accessor :parent, :name, :style, :href, :id, :type, :default, :path, :required, :repeating, :fixed
 
     def initialize(parent, name, style, href = nil, id = nil, type = nil, default = nil, path = nil, required = nil, repeating = nil, fixed = nil)
       self.parent = parent
@@ -429,7 +452,6 @@ module Wadlgen
       self.required = required
       self.repeating = repeating
       self.fixed = fixed
-      self.options = []
     end
 
   end

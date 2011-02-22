@@ -28,8 +28,8 @@ module Wadlgen
       initial.each do |resources|
         res = target.add_resources(resources.base)
         merge_docs res, resources.docs
-        if additional.has_resources? resources.base
-          merge_resources res, resources.resources, additional.get_resources(resources.base)
+        if additional.first.parent.has_resources? resources.base
+          merge_resources res, resources.resources, additional.first.parent.get_resources(resources.base)
         else
           merge_resources res, resources.resources
         end
@@ -38,27 +38,34 @@ module Wadlgen
         unless target.has_resources? resources.base
           res = target.add_resources(resources.base)
           merge_docs res, resources.docs
+          merge_resources res, resources.resources
         end
       end
     end
 
     def merge_resource_types(target, initial, additional)
       if initial and initial.length > 0
-        initial.resource_types.each do |initial_res_type|
+        initial.each do |initial_res_type|
           res_type = target.add_resource_type(initial_res_type.id)
           merge_docs res_type, initial_res_type.docs
-          if additional.has_resource_type? initial_res_type.id
-            other = additional.get_resource_type initial_res_type.id
+          if additional.first.application.has_resource_type? initial_res_type.id
+            other = additional.first.application.get_resource_type initial_res_type.id
           else
-            other = []
+            other = nil
           end
-          merge_params res_type, initial_res_type.params, other.params
-          merge_methods res_type, initial_res_type.methods, other.methods
-          merge_resources res_type, initial_res_type.resources, other.resources
+          if other
+            merge_params res_type, initial_res_type.params, other.params
+            merge_methods res_type, initial_res_type.methods, other.methods
+            merge_resources res_type, initial_res_type.resources, other.resources
+          else
+            merge_params res_type, initial_res_type.params
+            merge_methods res_type, initial_res_type.methods
+            merge_resources res_type, initial_res_type.resources
+          end
         end
       end
       if additional and additional.length > 0
-        additional.resource_types.each do |additional_res_type|
+        additional.each do |additional_res_type|
           unless target.has_resource_type? additional_res_type.id
             res_type = target.add_resource_type(additional_res_type.id)
             merge_docs res_type, additional_res_type.docs
@@ -71,24 +78,27 @@ module Wadlgen
     end
 
     def merge_resources(target, initial, additional = [])
-      (initial + additional).each do |init_res|
-        if target.has_resource? init_res.path
-            res = get_resource init_res.type, init_res.path
-            merge_docs res, res.docs, add_res.docs
-            merge_params res, res.params, add_res.params
-            merge_methods res, res.methods, add_res.methods
-            merge_resources res, res.resources, add_res.resources
-        else
-          res = target.add_resource init_res.type, init_res.id, init_res.query_type
-          merge_docs res, init_res.docs
-          merge_params res, init_res.params
-          merge_methods res, init_res.methods
-          merge_resources res, init_res.resources
+      if initial
+        (initial + additional).each do |init_res|
+          if target.has_resource? init_res.type, init_res.path
+              res = get_resource init_res.type, init_res.path
+              merge_docs res, res.docs, add_res.docs
+              merge_params res, res.params, add_res.params
+              merge_methods res, res.methods, add_res.methods
+              merge_resources res, res.resources, add_res.resources
+          else
+            res = target.add_resource init_res.type, init_res.path, init_res.id, init_res.query_type
+            merge_docs res, init_res.docs
+            merge_params res, init_res.params
+            merge_methods res, init_res.methods
+            merge_resources res, init_res.resources
+          end
         end
       end
     end
 
     def merge_methods(target, initial, additional = [])
+      initial ||= []
       (initial + additional).each do |init_meth|
         if target.has_method? init_meth.name, init_meth.id
           meth = target.get_method init_meth.name, init_meth.id
@@ -109,19 +119,19 @@ module Wadlgen
         req = target.add_request
         merge_docs req, initial.docs
         merge_params req, initial.params
-        merge_representations req, initial.representation
+        merge_representations req, initial.representations
       else
         req = target.request
         merge_docs req, initial.docs
         merge_params req, initial.params
-        merge_representations req, initial.representation
+        merge_representations req, initial.representations
       end
 
       if additional
         req = target.request
         merge_docs req, req.docs, additional.docs
         merge_params req, req.params, additional.params
-        merge_representations req, req.representation, additional.representation
+        merge_representations req, req.representations, additional.representations
       end
 
     end
@@ -143,6 +153,7 @@ module Wadlgen
     end
 
     def merge_representations(target, initial, additional = [])
+      initial ||= []
       (initial + additional).each do |add_repr|
         if target.has_representation? add_repr.media_type
           repr = target.get_representation add_repr.media_type
@@ -157,6 +168,7 @@ module Wadlgen
     end
 
     def merge_params(target, initial, additional = [])
+      initial ||= []
       (initial + additional).each do |add_param|
         if target.has_param? add_param.name, add_param.style
           param = target.get_param add_param.name, add_param.style
@@ -164,7 +176,7 @@ module Wadlgen
           merge_options param, param.options, add_param.options
           merge_link param, param.link, add_param.link
         else
-          param = target.add_param add_param.value,     add_param.style,
+          param = target.add_param add_param.name,      add_param.style,
                                    add_param.href,      add_param.id,
                                    add_param.type,      add_param.default,
                                    add_param.path,      add_param.required,
@@ -177,6 +189,7 @@ module Wadlgen
     end
 
     def merge_options(target, initial, additional = [])
+      initial ||= []
       (initial + additional).each do |add_opt|
         if target.has_option? add_opt.value
           opt = target.get_option add_opt.value
