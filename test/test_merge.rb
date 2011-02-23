@@ -82,5 +82,19 @@ class TestClasses < Test::Unit::TestCase
     assert_equal 'query', merge.resources.first.resources.first.methods.first.request.params.first.link.resource_type
   end
 
+  def test_merge_no_grammars
+    app1 = Wadlgen::Application.new
+    app1.add_doc('app1', "App1")
+    gram1 = app1.add_grammars
+
+    app2 = Wadlgen::Application.new
+    app2.add_doc('app2', "App2")
+
+    merge = Wadlgen::Wadl.merge app1, app2
+
+    assert_equal 1, merge.docs.length
+    assert_equal merge, merge.grammars.application
+  end
+
 end
 

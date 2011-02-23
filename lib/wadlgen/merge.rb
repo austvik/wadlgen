@@ -215,11 +215,18 @@ module Wadlgen
 
     def merge_grammars(target, initial, additional)
       grammars = target.add_grammars
-      merge_docs grammars, initial.docs, additional.docs
-      merge_includes grammars, initial.includes, additional.includes
+      if initial
+        if additional
+          merge_docs grammars, initial.docs, additional.docs
+          merge_includes grammars, initial.includes, additional.includes
+        else
+          merge_docs grammars, initial.docs
+          merge_includes grammars, initial.includes
+        end
+      end
     end
 
-    def merge_includes(target, initial, additional)
+    def merge_includes(target, initial, additional = [])
       initial.each do |incl|
         incl = target.add_include incl.href
         merge_docs incl, incl.docs
