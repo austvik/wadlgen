@@ -8,6 +8,26 @@ class TestClasses < Test::Unit::TestCase
     app = Wadlgen::Application.new
   end
 
+  def test_documentation
+    app = Wadlgen::Application.new
+    doc = app.add_doc "title1", "text1", 'no'
+    assert_equal app, doc.parent
+    assert_equal 'title1', doc.title
+    assert_equal 'text1', doc.text
+    assert_equal 'no', doc.xml_lang
+    assert app.has_doc? 'title1'
+  end
+
+  def test_grammars
+    app = Wadlgen::Application.new
+    grms = app.add_grammars
+    assert_equal app, grms.application
+    incl1 = grms.add_include 'http://some.example.com/'
+    assert_equal grms,  incl1.grammars
+    assert grms.has_include?('http://some.example.com/')
+    assert !grms.has_include?('http://some.other.example.com/')
+  end
+
   def test_resources
     base = "http://www.example.com/"
     path = "resources"
