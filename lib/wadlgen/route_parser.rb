@@ -51,7 +51,14 @@ module Wadlgen
     def get_representations(controller, action)
       res = {}
       controller_name = "#{controller}_controller".camelcase
-      cont_obj = Object::const_get(controller_name).new()
+      if controller_name.match /::/
+        module_name = controller_name.split('::').first
+        controller_name = controller_name.split('::').last
+        obj = Object::const_get(module_name)
+        cont_obj = obj.const_get(controller_name).new()
+      else
+        cont_obj = Object::const_get(controller_name).new()
+      end
       cont_obj.mimes_for_respond_to.each_pair do |format, type|
         res[format] = format
         # TODO: Only and Except
