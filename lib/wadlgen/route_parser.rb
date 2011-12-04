@@ -26,7 +26,7 @@ module Wadlgen
         controller = defaults[:controller]
         action = defaults[:action]
 
-        next unless controller.match /api\//
+        next if /\//
         next if action == 'edit'
 
         resource = ress.get_resource(nil, route.path)
