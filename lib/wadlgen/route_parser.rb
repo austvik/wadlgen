@@ -22,7 +22,7 @@ module Wadlgen
       application.routes.routes.each do |route|
 
         defaults = route.defaults
-
+        next if defaults.empty?
         controller = defaults[:controller]
         action = defaults[:action]
 
